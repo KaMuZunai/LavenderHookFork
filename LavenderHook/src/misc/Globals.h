@@ -22,6 +22,7 @@ namespace LavenderHook::Globals
     inline bool show_info_overlay = true;
     inline bool show_general_window = true;
     inline bool show_misc_window = true;
+    inline bool show_paragon_level_window = false;
     inline bool show_performance_overlay = true;
     inline bool show_menu_selector_window = false;
     inline bool show_menu_logo = true;

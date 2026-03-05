@@ -264,6 +264,7 @@ static void SaveMenuSettings()
     f << "show_server=" << BoolToStr(LavenderHook::Globals::show_server) << "\n";
     f << "show_general_window=" << BoolToStr(LavenderHook::Globals::show_general_window) << "\n";
     f << "show_misc_window=" << BoolToStr(LavenderHook::Globals::show_misc_window) << "\n";
+    f << "show_paragon_level_window=" << BoolToStr(LavenderHook::Globals::show_paragon_level_window) << "\n";
     f << "show_console=" << BoolToStr(LavenderHook::Globals::show_console) << "\n";
     f << "show_menu_logo=" << BoolToStr(LavenderHook::Globals::show_menu_logo) << "\n";
     f << "stop_on_fail=" << BoolToStr(LavenderHook::Globals::stop_on_fail) << "\n";
@@ -303,6 +304,7 @@ void LoadMenuSettings()
         if (line.rfind("show_server", 0) == 0)               ReadBool(line, LavenderHook::Globals::show_server);
         if (line.rfind("show_general_window", 0) == 0)       ReadBool(line, LavenderHook::Globals::show_general_window);
         if (line.rfind("show_misc_window", 0) == 0)          ReadBool(line, LavenderHook::Globals::show_misc_window);
+        if (line.rfind("show_paragon_level_window", 0) == 0) ReadBool(line, LavenderHook::Globals::show_paragon_level_window);
         if (line.rfind("show_console", 0) == 0)              ReadBool(line, LavenderHook::Globals::show_console);
         if (line.rfind("show_menu_logo", 0) == 0)            ReadBool(line, LavenderHook::Globals::show_menu_logo);
         if (line.rfind("show_process_overlay_on_hide", 0) == 0) ReadBool(line, LavenderHook::Globals::show_process_overlay_on_hide);
@@ -386,7 +388,7 @@ namespace LavenderHook {
                 float contentHeight = 0.0f;
 
                 // base options
-                contentHeight += 10 * rowH; // main checkboxes
+                contentHeight += 11 * rowH; // main checkboxes
 
                 float perfLayoutT = (s_perfAnim > kHideThreshold) ? s_perfAnim : 0.0f;
 
@@ -482,6 +484,14 @@ namespace LavenderHook {
                     b = LavenderHook::Globals::show_misc_window;
                     if (ImGui::Checkbox("Misc Window", &b)) {
                         LavenderHook::Globals::show_misc_window = b;
+                        SaveMenuSettings();
+                        LavenderHook::Audio::PlayToggleSound(b);
+                    }
+
+                    // Toggle "Mastery" Level Window
+                    b = LavenderHook::Globals::show_paragon_level_window;
+                    if (ImGui::Checkbox("Mastery Level", &b)) {
+                        LavenderHook::Globals::show_paragon_level_window = b;
                         SaveMenuSettings();
                         LavenderHook::Audio::PlayToggleSound(b);
                     }

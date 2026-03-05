@@ -8,6 +8,7 @@
 #include "../ui/components/LavenderBackgroundDim.h"
 #include "../ui/components/console.h"
 #include "../windows/MenuLogoWindow.h"
+#include "../windows/ParagonLevelWindow.h"
 
 
 void RegisterUIWindows()
@@ -88,6 +89,16 @@ void RegisterUIWindows()
             LavenderHook::UI::Windows::ImageDragWindow::Render(
                 LavenderHook::Globals::show_menu &&
                 LavenderHook::Globals::show_menu_logo
+            );
+        },
+        nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        nullptr,
+        [] {
+            LavenderHook::UI::Windows::ParagonLevelWindow::Render(
+                LavenderHook::Globals::show_paragon_level_window
             );
         },
         nullptr
