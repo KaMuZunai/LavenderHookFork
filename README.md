@@ -65,6 +65,10 @@ When enabled, the General window will be visible; otherwise, invisible.
 - **Misc Window**\
 When enabled, the Misc window will be visible; otherwise, invisible.
 
+- **Mastery Level**\
+When enabled, will display a level icon that will gain experience by playing the game
+with a custom XP system. This does not provide any benefits outside of being fun.
+
 - **Console**\
 When enabled, the Console will be visible; otherwise, invisible.
 
