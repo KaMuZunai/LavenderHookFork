@@ -14,7 +14,7 @@ namespace LavenderHook {
             { "Difficulty.Hard",       2.75f  },
             { "Difficulty.Insane",     5.50f  },
             { "Difficulty.Nightmare",  12.00f },
-            { "Difficulty.Massacre",   20.00f },
+            { "Difficulty.Massacre",   25.00f },
         };
 
         // Map Multipliers
@@ -62,13 +62,13 @@ namespace LavenderHook {
         // Gamemode Multipliers
         inline const std::unordered_map<std::string, float> GameModeMultipliers =
         {
-            { "Gamemode.NUE",               1.00f },
-            { "Gamemode.Campaign",          1.00f },
+            { "Gamemode.NUE",               2.00f },
+            { "Gamemode.Campaign",          2.00f },
             { "Gamemode.Survival",          0.50f },
-            { "Gamemode.Survival.Mixed",    2.00f },
-            { "Gamemode.PureStrategy",      2.50f },
-            { "Gamemode.Challenge",         3.00f },
-            { "Gamemode.BossTest",          5.00f },
+            { "Gamemode.Survival.Mixed",    4.00f },
+            { "Gamemode.PureStrategy",      5.00f },
+            { "Gamemode.Challenge",         6.00f },
+            { "Gamemode.BossTest",          10.00f },
         };
 
         // Bonus Difficulty Multipliers

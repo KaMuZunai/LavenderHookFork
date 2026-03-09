@@ -3,8 +3,10 @@
 
 #include "../windows/GeneralButtonsWindow.h"
 #include "../windows/MiscButtonsWindow.h"
+#include "../windows/GamepadWindow.h"
 #include "../windows/PerformanceOverlayWindow.h"
 #include "../windows/ToggleMenuWindow.h"
+#include "../windows/ProfilesWindow.h"
 #include "../ui/components/LavenderBackgroundDim.h"
 #include "../ui/components/console.h"
 #include "../windows/MenuLogoWindow.h"
@@ -56,6 +58,17 @@ void RegisterUIWindows()
     ui.Register(UIWindowEntry{
         nullptr,
         [] {
+            LavenderHook::UI::Windows::GamepadWindow::Render(
+                LavenderHook::Globals::show_menu &&
+                LavenderHook::Globals::show_gamepad_window
+            );
+        },
+        nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        nullptr,
+        [] {
             LavenderHook::UI::Windows::PerformanceOverlayWindow::Render();
         },
         nullptr
@@ -99,6 +112,17 @@ void RegisterUIWindows()
         [] {
             LavenderHook::UI::Windows::ParagonLevelWindow::Render(
                 LavenderHook::Globals::show_paragon_level_window
+            );
+        },
+        nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        nullptr,
+        [] {
+            LavenderHook::UI::Windows::ProfilesWindow::Render(
+                LavenderHook::Globals::show_menu &&
+                LavenderHook::Globals::show_profiles_window
             );
         },
         nullptr

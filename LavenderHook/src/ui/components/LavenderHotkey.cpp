@@ -66,7 +66,7 @@ namespace LavenderHook::UI::Lavender {
             return true;
         }
 
-        // Scan all possible virtual-key codes so any key can be bound..
+        // Scan all possible virtual-key codes so any key can be bound.
         for (int code = 1; code < 256; ++code)
         {
             if (!IsBindableVk(code))
@@ -204,6 +204,100 @@ namespace LavenderHook::UI::Lavender {
             bindEdge[code] = down;
         }
 
+        // Scan gamepad buttons
+        for (int code = GPVK_BASE; code < GPVK_END; ++code)
+        {
+            bool down = GetGamepadVkDown(code);
+            bool prev = bindEdge[code];
+
+            // Button pressed edge
+            if (down && !prev)
+            {
+                int assigned = code;
+
+                if (waiting_for_combo && pending_first_vk != 0 && assigned != pending_first_vk)
+                {
+                    int combo = (assigned << 16) | (pending_first_vk & 0xFFFF);
+                    *keyVK = combo;
+                    listening = false;
+
+                    ignore_vk = assigned;
+                    ignore_until_up = true;
+                    just_bound = true;
+
+                    keyEdge[assigned] = true;
+                    s_suppressToggleUntilUp[assigned] = true;
+
+                    pending_first_vk = 0;
+                    waiting_for_combo = false;
+
+                    bindEdge.clear();
+                    if (g_listening_hotkey == this) g_listening_hotkey = nullptr;
+                    return true;
+                }
+
+                if (!waiting_for_combo)
+                {
+                    pending_first_vk = assigned;
+                    waiting_for_combo = true;
+
+                    keyEdge[assigned] = true;
+                    s_suppressToggleUntilUp[assigned] = true;
+
+                    bindEdge[code] = down;
+                    continue;
+                }
+            }
+
+            // Button released edge
+            if (!down && prev)
+            {
+                if (waiting_for_combo && pending_first_vk == code)
+                {
+                    *keyVK = pending_first_vk;
+                    listening = false;
+
+                    ignore_vk = pending_first_vk;
+                    ignore_until_up = true;
+                    just_bound = true;
+
+                    keyEdge[pending_first_vk] = true;
+                    s_suppressToggleUntilUp[pending_first_vk] = true;
+
+                    pending_first_vk = 0;
+                    waiting_for_combo = false;
+
+                    bindEdge.clear();
+                    if (g_listening_hotkey == this) g_listening_hotkey = nullptr;
+                    bindEdge[code] = down;
+                    return true;
+                }
+
+                if (!waiting_for_combo)
+                {
+                    *keyVK = code;
+                    listening = false;
+
+                    ignore_vk = code;
+                    ignore_until_up = true;
+                    just_bound = true;
+
+                    keyEdge[code] = true;
+                    s_suppressToggleUntilUp[code] = true;
+
+                    bindEdge.clear();
+                    if (g_listening_hotkey == this) g_listening_hotkey = nullptr;
+                    bindEdge[code] = down;
+                    return true;
+                }
+
+                bindEdge[code] = down;
+                continue;
+            }
+
+            bindEdge[code] = down;
+        }
+
         return false;
     }
 
@@ -241,7 +335,7 @@ namespace LavenderHook::UI::Lavender {
 
         if (ignore_until_up)
         {
-            if ((GetAsyncKeyState(ignore_vk) & 0x8000) == 0)
+            if (!IsVkDown(ignore_vk))
             {
                 ignore_until_up = false;
                 keyEdge[ignore_vk] = false;
@@ -255,7 +349,7 @@ namespace LavenderHook::UI::Lavender {
 
         if (second != 0) {
             // Combo binding
-            const bool down2 = (GetAsyncKeyState(second) & 0x8000) != 0;
+            const bool down2 = IsVkDown(second);
             auto sit2 = s_suppressToggleUntilUp.find(second);
             if (sit2 != s_suppressToggleUntilUp.end() && sit2->second) {
                 if (!down2) {
@@ -269,7 +363,7 @@ namespace LavenderHook::UI::Lavender {
             const bool prev2 = keyEdge[second];
             keyEdge[second] = down2;
 
-            const bool modDown = (GetAsyncKeyState(first) & 0x8000) != 0;
+            const bool modDown = IsVkDown(first);
             if (down2 && !prev2 && modDown) {
                 toggleState = !toggleState;
                 LavenderHook::Audio::PlayToggleSound(toggleState);
@@ -279,7 +373,7 @@ namespace LavenderHook::UI::Lavender {
 
         // single-key behavior
         const int vk = first;
-        const bool down = (GetAsyncKeyState(vk) & 0x8000) != 0;
+        const bool down = IsVkDown(vk);
         auto sit = s_suppressToggleUntilUp.find(vk);
         if (sit != s_suppressToggleUntilUp.end() && sit->second) {
             if (!down) {
@@ -296,6 +390,11 @@ namespace LavenderHook::UI::Lavender {
             toggleState = !toggleState;
             LavenderHook::Audio::PlayToggleSound(toggleState);
         }
+    }
+
+    bool IsAnyHotkeyListening()
+    {
+        return g_listening_hotkey != nullptr;
     }
 
 } // namespace LavenderHook::UI::Lavender

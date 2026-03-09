@@ -28,6 +28,7 @@ namespace LavenderHook {
             using LavenderHook::Input::HoldVK;
             using LavenderHook::Input::HoldState;
             using LavenderHook::Input::PressVK;
+            using LavenderHook::Input::PressVKNoInit;
             using LavenderHook::Input::PressUpVK;
             using LavenderHook::Input::AutomationAllowed;
             using LavenderHook::Input::TickEvery;
@@ -39,6 +40,10 @@ namespace LavenderHook {
             // Auto F
             static int g_autoF_interval_ms = 8000;
             static int g_autoF_key_vk = 'F';
+
+            // Alt Flash Buff
+            static int g_altAutoF_interval_ms = 8000;
+            static int g_altAutoF_key_vk = 0x0209; // GPVK_RB
 
             // Auto G press key
             static int g_autoG_key_vk = 'G';
@@ -74,6 +79,8 @@ namespace LavenderHook {
                 g_autoG_delay_ms = cfg.GetInt("auto_g_delay_ms", 3000);
                 g_autoF_interval_ms = cfg.GetInt("auto_f_interval_ms", 8000);
                 g_autoF_key_vk = cfg.GetInt("auto_f_press_key", g_autoF_key_vk);
+                g_altAutoF_interval_ms = cfg.GetInt("alt_auto_f_interval_ms", 8000);
+                g_altAutoF_key_vk = cfg.GetInt("alt_auto_f_press_key", g_altAutoF_key_vk);
                 g_autoG_key_vk = cfg.GetInt("auto_g_press_key", g_autoG_key_vk);
                 g_autoCtrlg_ctrl_vk = cfg.GetInt("auto_ctrlg_ctrl_key", g_autoCtrlg_ctrl_vk);
                 g_autoCtrlg_g_vk = cfg.GetInt("auto_ctrlg_g_key", g_autoCtrlg_g_vk);
@@ -96,6 +103,8 @@ namespace LavenderHook {
                 cfg.SetInt("auto_g_delay_ms", g_autoG_delay_ms);
                 cfg.SetInt("auto_f_interval_ms", g_autoF_interval_ms);
                 cfg.SetInt("auto_f_press_key", g_autoF_key_vk);
+                cfg.SetInt("alt_auto_f_interval_ms", g_altAutoF_interval_ms);
+                cfg.SetInt("alt_auto_f_press_key", g_altAutoF_key_vk);
                 cfg.SetInt("auto_g_press_key", g_autoG_key_vk);
                 cfg.SetInt("auto_ctrlg_ctrl_key", g_autoCtrlg_ctrl_vk);
                 cfg.SetInt("auto_ctrlg_g_key", g_autoCtrlg_g_vk);
@@ -136,6 +145,11 @@ namespace LavenderHook {
 
             void SetAutoFKey(int vk) { LoadOnce(); g_autoF_key_vk = vk; Save(); }
             int GetAutoFKey() { LoadOnce(); return g_autoF_key_vk; }
+
+            void SetAltAutoFTiming(int intervalMs) { LoadOnce(); g_altAutoF_interval_ms = intervalMs; Save(); }
+            int GetAltAutoFIntervalMs() { LoadOnce(); return g_altAutoF_interval_ms; }
+            void SetAltAutoFKey(int vk) { LoadOnce(); g_altAutoF_key_vk = vk; Save(); }
+            int GetAltAutoFKey() { LoadOnce(); return g_altAutoF_key_vk; }
 
             void SetAutoGKey(int vk) { LoadOnce(); g_autoG_key_vk = vk; Save(); }
             int GetAutoGKey() { LoadOnce(); return g_autoG_key_vk; }
@@ -250,6 +264,16 @@ namespace LavenderHook {
                     });
             }
 
+            static void TickAltAutoF(bool enabled)
+            {
+                LoadOnce();
+
+                static steady_clock::time_point last;
+                TickEvery(enabled, last, milliseconds(g_altAutoF_interval_ms), []() {
+                    PressVKNoInit(g_altAutoF_key_vk);
+                    });
+            }
+
             static void TickAutoCtrlG(bool enabled)
             {
                 LoadOnce();
@@ -352,6 +376,7 @@ namespace LavenderHook {
             }
 
             void TickButton5(bool enabled) { TickAutoClick(enabled); }
+            void TickButton6(bool enabled) { TickAltAutoF(enabled); }
 
         }
     }

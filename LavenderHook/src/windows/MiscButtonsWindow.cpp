@@ -1,5 +1,6 @@
 ﻿#include "MiscButtonsWindow.h"
 #include "functions/MiscButtonActions.h"
+#include "functions/FunctionRegistry.h"
 #include "../misc/LogMonitor.h"
 #include "../misc/Globals.h"
 #include "../misc/SoundPlayer.h"
@@ -72,17 +73,25 @@ Hotkey - Select Hotkey to toggle the button. (Esc binds to None))");
 additional configurations:
 Hotkey - Select Hotkey to toggle the button. (Esc binds to None))");
 
-        auto& minimize = g_state.Toggle("Hide Window");
-        minimize.enabled = false;
+		auto& minimize = g_state.Toggle("Hide Window");
+		minimize.enabled = false;
 
-        g_window.AddToggleDropdown(
-            "Hide Window",
-            &minimize.enabled,
-            &g_minimizeHotkey
+		g_window.AddToggleDropdown(
+			"Hide Window",
+			&minimize.enabled,
+			&g_minimizeHotkey
 		).AddItemDescription(R"(Hides the game window but keeps it active. (Restore with System Tray icon)
 additional configurations:
 Hotkey - Select Hotkey to trigger minimizing the window. (Esc binds to None))");
-    }
+
+		// Register toggles with the global function registry
+		{
+			auto& reg = LavenderHook::UI::FunctionRegistry::Instance();
+			reg.Register("Flash Heal Fix", &flashHeal.enabled);
+			reg.Register("Always Cursor",  &keepTri.enabled);
+			reg.Register("Hide Window",    &minimize.enabled);
+		}
+	}
 
     void MiscButtonsWindow::Init()
     {

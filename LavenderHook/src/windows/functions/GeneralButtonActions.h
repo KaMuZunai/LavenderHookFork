@@ -10,6 +10,7 @@ namespace LavenderHook {
             void TickButton3(bool enabled);
             void TickButton4(bool enabled);
             void TickButton5(bool enabled);
+            void TickButton6(bool enabled);
 
             // Auto G
             void SetAutoGTimings(int holdMs, int delayMs);
@@ -21,6 +22,12 @@ namespace LavenderHook {
             int  GetAutoFIntervalMs();
             void SetAutoFKey(int vk);
             int  GetAutoFKey();
+
+            // Alt Flash Buff
+            void SetAltAutoFTiming(int intervalMs);
+            int  GetAltAutoFIntervalMs();
+            void SetAltAutoFKey(int vk);
+            int  GetAltAutoFKey();
 
             // Auto G press key
             void SetAutoGKey(int vk);

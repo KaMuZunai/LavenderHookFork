@@ -22,10 +22,12 @@ namespace LavenderHook::Globals
     inline bool show_info_overlay = true;
     inline bool show_general_window = true;
     inline bool show_misc_window = true;
+    inline bool show_gamepad_window = false;
     inline bool show_paragon_level_window = false;
     inline bool show_performance_overlay = true;
     inline bool show_menu_selector_window = false;
     inline bool show_menu_logo = true;
+    inline bool show_profiles_window = false;
 
     // Performance Overlay Settings
     inline bool show_perf_fps = true;
@@ -54,15 +56,17 @@ namespace LavenderHook::Globals
     // Focus shim
     inline bool simulate_unfocused = true;
 
+    // Request for chopped Minimize to clear its toggle after regaining focus
+    inline bool minimize_auto_clear_requested = false;
+
+    // Set while the game window is hidden
+    inline bool window_hidden = false;
+
+    // XInput queries
+    inline thread_local bool xinput_our_query = false;
+
     // DLL module handle
     inline HMODULE dll_module = nullptr;
     // Tray callback message id
     inline UINT tray_callback_message = WM_APP + 100;
-
-    // Request for chopped Minimize to clear its toggle after regaining focus
-    inline bool minimize_auto_clear_requested = false;
-
-    // Set while the game window is hidden (WS_EX_LAYERED alpha=0).
-    // Used by WndProc to eat mouse button events while passing WM_MOUSEMOVE through.
-    inline bool window_hidden = false;
 }

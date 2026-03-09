@@ -29,6 +29,10 @@ If you dont want to bundle the updater you can instead do this:\
 After installation, launching the game normally should automatically
 load the overlay.
 
+You may also need to install **ViGEmBus** if you want to use the **Virtual Controller**\
+it may be downloaded from here:\
+`https://github.com/nefarius/ViGEmBus/releases/tag/v1.22.0`
+
 ----------------------------------------------------------------------------------
 
 # Main Features
@@ -64,6 +68,12 @@ When enabled, the General window will be visible; otherwise, invisible.
 
 - **Misc Window**\
 When enabled, the Misc window will be visible; otherwise, invisible.
+
+- **Virtual Controller**\
+When enabled, the Virtual Controller window will be visible; otherwise, invisible.
+
+- **Profiles Window**\
+When enabled, the Profiles window will be visible; otherwise, invisible.
 
 - **Mastery Level**\
 When enabled, will display a level icon that will gain experience by playing the game
@@ -169,7 +179,6 @@ This is mainly used to upgrade a large number of towers.
 Hotkey - Up to 2 combo hotkeys to quickly toggle the button. (ESC binds to None.)\
 Interval - The time between each repeating action.
 
-
 ----------------------------------------------------------------------------------
 
 ## Misc Window
@@ -202,6 +211,26 @@ window back to its original form.
 
 - - You may configure:\
 Hotkey - Up to 2 combo hotkeys to quickly toggle the button. (ESC binds to None.)
+
+----------------------------------------------------------------------------------
+
+## Virtual Controller Window
+
+This window has a on screen controller layout that lets you control the game
+or mainly a split screen character.
+
+The window will not connect without ViGEmBus installed.
+
+----------------------------------------------------------------------------------
+
+## Profiles Window
+
+This window will have an option to create a new profile which will save your
+currently active functions into a profile. The next time the profile button is
+pressed it will toggle all the functions within the profile.
+
+The Profiles additionally have a adjustable Hotkey button, rename button and 
+a delete button.
 
 ----------------------------------------------------------------------------------
 
@@ -244,3 +273,8 @@ be freely used, modified, and distributed without restriction.
 
 Dear ImGui is licensed under the MIT License. You may freely use,
 modify, and distribute it under MIT terms.
+
+## ViGEmBus
+ViGEmBus is licensed under the 3-Clause BSD License. It allows free use,
+modification, and redistribution in both source and binary forms, provided
+that the original copyright notice and license terms are retained.

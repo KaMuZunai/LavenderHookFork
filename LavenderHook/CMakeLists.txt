@@ -13,7 +13,7 @@ file(GLOB_RECURSE SRC_FILES
     ${CMAKE_SOURCE_DIR}/src/*.c
 )
 
-add_library(LavenderHook SHARED ${SRC_FILES} "src/ui/UIState.cpp" "src/ui/components/LavenderWindowHeader.h" "src/ui/components/LavenderWindowHeader.cpp")
+add_library(LavenderHook SHARED ${SRC_FILES})
 
 target_compile_definitions(LavenderHook PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
 
@@ -34,7 +34,14 @@ target_link_libraries(LavenderHook
     Gdi32
     Dwmapi
     Version
+    Xinput
+    ViGEmClient
+    Setupapi
 )
+
+if(MSVC)
+    target_compile_options(LavenderHook PRIVATE /MT)
+endif()
 
 # Export settings
 set_target_properties(LavenderHook PROPERTIES

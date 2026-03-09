@@ -1,8 +1,30 @@
 #pragma once
 
 #include <Windows.h>
+#include <Xinput.h>
+#include <string>
+#include "../misc/Globals.h"
 
 namespace LavenderHook::UI::Lavender {
+
+    static constexpr int GPVK_BASE        = 0x0200;
+    static constexpr int GPVK_DPAD_UP     = 0x0200;
+    static constexpr int GPVK_DPAD_DOWN   = 0x0201;
+    static constexpr int GPVK_DPAD_LEFT   = 0x0202;
+    static constexpr int GPVK_DPAD_RIGHT  = 0x0203;
+    static constexpr int GPVK_START       = 0x0204;
+    static constexpr int GPVK_BACK        = 0x0205;
+    static constexpr int GPVK_LS          = 0x0206;
+    static constexpr int GPVK_RS          = 0x0207;
+    static constexpr int GPVK_LB          = 0x0208;
+    static constexpr int GPVK_RB          = 0x0209;
+    static constexpr int GPVK_A           = 0x020A;
+    static constexpr int GPVK_B           = 0x020B;
+    static constexpr int GPVK_X           = 0x020C;
+    static constexpr int GPVK_Y           = 0x020D;
+    static constexpr int GPVK_LT          = 0x020E;
+    static constexpr int GPVK_RT          = 0x020F;
+    static constexpr int GPVK_END         = 0x0210;
 
     struct KeyEntry { int vk; const char* name; };
 
@@ -34,7 +56,72 @@ namespace LavenderHook::UI::Lavender {
         {VK_MBUTTON,"MOUSE3"},
         {VK_XBUTTON1,"MOUSE4"},
         {VK_XBUTTON2,"MOUSE5"},
+
+        // Gamepad buttons
+        {GPVK_DPAD_UP,    "GP:DPAD_UP"},
+        {GPVK_DPAD_DOWN,  "GP:DPAD_DN"},
+        {GPVK_DPAD_LEFT,  "GP:DPAD_LT"},
+        {GPVK_DPAD_RIGHT, "GP:DPAD_RT"},
+        {GPVK_START,      "GP:START"},
+        {GPVK_BACK,       "GP:BACK"},
+        {GPVK_LS,         "GP:LS"},
+        {GPVK_RS,         "GP:RS"},
+        {GPVK_LB,         "GP:LB"},
+        {GPVK_RB,         "GP:RB"},
+        {GPVK_A,          "GP:A"},
+        {GPVK_B,          "GP:B"},
+        {GPVK_X,          "GP:X"},
+        {GPVK_Y,          "GP:Y"},
+        {GPVK_LT,         "GP:LT"},
+        {GPVK_RT,         "GP:RT"},
     };
+
+    inline bool IsGamepadVk(int vk)
+    {
+        return vk >= GPVK_BASE && vk < GPVK_END;
+    }
+
+    // Returns true if the gamepad VK is pressed on any connected XInput controller.
+    inline bool GetGamepadVkDown(int vk)
+    {
+        for (DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+        {
+            XINPUT_STATE state{};
+            LavenderHook::Globals::xinput_our_query = true;
+            DWORD result = XInputGetState(i, &state);
+            LavenderHook::Globals::xinput_our_query = false;
+            if (result != ERROR_SUCCESS)
+                continue;
+            const XINPUT_GAMEPAD& gp = state.Gamepad;
+            switch (vk)
+            {
+                case GPVK_DPAD_UP:    if (gp.wButtons & XINPUT_GAMEPAD_DPAD_UP)            return true; break;
+                case GPVK_DPAD_DOWN:  if (gp.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)          return true; break;
+                case GPVK_DPAD_LEFT:  if (gp.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)          return true; break;
+                case GPVK_DPAD_RIGHT: if (gp.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)         return true; break;
+                case GPVK_START:      if (gp.wButtons & XINPUT_GAMEPAD_START)               return true; break;
+                case GPVK_BACK:       if (gp.wButtons & XINPUT_GAMEPAD_BACK)                return true; break;
+                case GPVK_LS:         if (gp.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)          return true; break;
+                case GPVK_RS:         if (gp.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)         return true; break;
+                case GPVK_LB:         if (gp.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)       return true; break;
+                case GPVK_RB:         if (gp.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)      return true; break;
+                case GPVK_A:          if (gp.wButtons & XINPUT_GAMEPAD_A)                   return true; break;
+                case GPVK_B:          if (gp.wButtons & XINPUT_GAMEPAD_B)                   return true; break;
+                case GPVK_X:          if (gp.wButtons & XINPUT_GAMEPAD_X)                   return true; break;
+                case GPVK_Y:          if (gp.wButtons & XINPUT_GAMEPAD_Y)                   return true; break;
+                case GPVK_LT:         if (gp.bLeftTrigger  > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) return true; break;
+                case GPVK_RT:         if (gp.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) return true; break;
+            }
+        }
+        return false;
+    }
+
+    // Down state query
+    inline bool IsVkDown(int vk)
+    {
+        if (IsGamepadVk(vk)) return GetGamepadVkDown(vk);
+        return (GetAsyncKeyState(vk) & 0x8000) != 0;
+    }
 
     inline bool IsBindableVk(int vk)
     {

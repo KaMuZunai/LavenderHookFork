@@ -4,15 +4,13 @@
 
 namespace LavenderHook::Input {
 
-    // Automation rules
     bool AutomationAllowed();
 
-    // Key primitives
     void PressVK(WORD vk);
+    void PressVKNoInit(WORD vk);
     void PressDownVK(WORD vk);
     void PressUpVK(WORD vk);
 
-    // Hold helper
     struct HoldState {
         bool isDown = false;
     };
