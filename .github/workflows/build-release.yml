@@ -2,14 +2,15 @@ name: Build and Release LavenderHook
 
 on:
   push:
-    tags:
-      - 'v*.*.*.*'
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository
@@ -21,20 +22,25 @@ jobs:
           arch: x64
 
       - name: Configure CMake
+
         run: cmake -B build -S LavenderHook -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       - name: Build
         run: cmake --build build
 
-      - name: Delete existing release
-        run: gh release delete ${{ github.ref_name }} --yes
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate Automatic Tag
+        id: auto_tag
+        run: echo "tag=v$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.auto_tag.outputs.tag }}
+          name: Auto-Release ${{ steps.auto_tag.outputs.tag }}
+          body: "This release was automatically generated upon merging to main."
           files: build/LavenderHook.dll
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
