@@ -21,7 +21,7 @@ jobs:
       - name: Read Version File
         id: get_version
         run: |
-          $ver = Get-Content Version
+          $ver = Get-Content HookVersion
           echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
         shell: powershell
 
