@@ -302,7 +302,10 @@ GUI::GUI()
     static bool fontLoaded = false;
     if (!fontLoaded) {
         ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 24.0f);
+        char winDir[MAX_PATH]; size_t outlen = 0;
+        getenv_s(&outlen, winDir, sizeof(winDir), "WINDIR");
+        std::string fontPath = outlen > 0 ? std::string(winDir) + "\\Fonts\\segoeui.ttf" : "C:\\Windows\\Fonts\\segoeui.ttf";
+        io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 24.0f);
         fontLoaded = true;
     }
 }

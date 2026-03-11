@@ -35,15 +35,10 @@ namespace LavenderHook {
 		// Resolve the DDS log path once
 		static std::string ResolveLogPath()
 		{
-			const char* pathTemplate = "C:\\Users\\%USERNAME%\\AppData\\Local\\DDS\\Saved\\Logs\\DDS.log";
-
-			char username[256]; size_t outlen = 0;
-			getenv_s(&outlen, username, sizeof(username), "USERNAME");
-
-			std::string path(pathTemplate);
-			size_t pos = path.find("%USERNAME%");
-			if (pos != std::string::npos) path.replace(pos, strlen("%USERNAME%"), username);
-			return path;
+			char localAppData[MAX_PATH]; size_t outlen = 0;
+			getenv_s(&outlen, localAppData, sizeof(localAppData), "LOCALAPPDATA");
+			if (outlen == 0) return {};
+			return std::string(localAppData) + "\\DDS\\Saved\\Logs\\DDS.log";
 		}
 
 		// Scan the log file backwards and return the most recent line that
