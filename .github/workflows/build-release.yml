@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -22,25 +24,27 @@ jobs:
           arch: x64
 
       - name: Configure CMake
-
         run: cmake -B build -S LavenderHook -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       - name: Build
         run: cmake --build build
 
-      - name: Generate Automatic Tag
-        id: auto_tag
-        run: echo "tag=v$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+      - name: Get Last Commit Message
+        id: vars
+        run: echo "message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Create Release
+      - name: Update Latest Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.auto_tag.outputs.tag }}
-          name: Auto-Release ${{ steps.auto_tag.outputs.tag }}
-          body: "This release was automatically generated upon merging to main."
+          tag_name: latest
+          name: Latest Development Build
+          body: |
+            **Last Update:** ${{ github.event.head_commit.timestamp }}
+            **Latest Changes:** ${{ steps.vars.outputs.message }}
+            
+            This release is automatically updated on every push to the main branch.
           files: build/LavenderHook.dll
-          draft: false
-          prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
