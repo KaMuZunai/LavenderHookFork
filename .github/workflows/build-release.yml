@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Read Version File
         id: get_version
@@ -28,19 +30,28 @@ jobs:
         with:
           arch: x64
 
-      - name: Configure CMake
-        run: cmake -B build -S LavenderHook -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - name: Configure CMake (LavenderHook)
+        run: cmake -B build-hook -S LavenderHook -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
-      - name: Build
-        run: cmake --build build
+      - name: Build LavenderHook
+        run: cmake --build build-hook
+
+      - name: Configure CMake (LavenderUpdater)
+        run: cmake -B build-updater -S LavenderUpdater -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build LavenderUpdater
+        run: cmake --build build-updater
 
       - name: Update Single Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: LavenderHook
-          name: "${{ steps.get_version.outputs.VERSION }} LavenderHook"
-          body: ""
-          files: build/LavenderHook.dll
+          tag_name: latest
+          name: "LavenderHook ${{ steps.get_version.outputs.VERSION }}"
+          body: "Automated build of the latest version. Version: ${{ steps.get_version.outputs.VERSION }}"
+          files: |
+            build-hook/LavenderHook.dll
+            build-updater/LavenderUpdater.dll
           make_latest: true
+          overwrite: true 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -37,6 +37,7 @@ target_link_libraries(LavenderHook
     Xinput
     ViGEmClient
     Setupapi
+    Winhttp
 )
 
 if(MSVC)

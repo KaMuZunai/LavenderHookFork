@@ -1,6 +1,6 @@
 #include "updater_core.h"
-#include "../misc/version_utils.h"
-#include "../misc/http_client.h"
+#include "../versionutils/version_utils.h"
+#include "../httpclient/http_client.h"
 #include "../logger/logger.h"
 #include "../assets/resource.h"
 
@@ -526,7 +526,7 @@ extern "C" __declspec(dllexport) void RunUpdater()
 
     std::string remoteText;
     bool fetched = fetch_url(
-        L"https://raw.githubusercontent.com/CoolGamer2000-dda/LavenderHook/refs/heads/main/Version",
+        L"https://raw.githubusercontent.com/CoolGamer2000-dda/LavenderHook/refs/heads/main/HookVersion",
         remoteText);
     log_message("RunUpdater: fetch_url=" + std::string(fetched ? "ok" : "fail"));
 
@@ -550,17 +550,18 @@ extern "C" __declspec(dllexport) void RunUpdater()
         return;
     }
 
-    // Versions match
-    if (localVersion == remoteVersion)
+    // Compare versions numerically so a newer local build doesn't trigger a spurious update
+    int cmp = compare_version_strings(localVersion, remoteVersion);
+    if (cmp >= 0)
     {
-        log_message("RunUpdater: versions MATCH — loading LavenderHook.dll");
+        log_message("RunUpdater: local version (" + localVersion + ") >= remote (" + remoteVersion + ") — loading LavenderHook.dll");
         load_lavenderhook(dllPath);
         self_unload_and_exit();
         return;
     }
 
-    // Versions don't match
-    log_message("RunUpdater: MISMATCH local=" + localVersion + " remote=" + remoteVersion);
+    // Remote is newer
+    log_message("RunUpdater: UPDATE available local=" + localVersion + " remote=" + remoteVersion);
 
     std::wstring remoteVersionW(remoteVersion.begin(), remoteVersion.end());
     std::wstring skipVersion = read_skip_version();
@@ -602,7 +603,7 @@ extern "C" __declspec(dllexport) void RunUpdater()
 
         log_message("RunUpdater: downloading new LavenderHook.dll");
         bool ok = download_file(
-            L"https://github.com/CoolGamer2000-dda/LavenderHook/releases/download/LavenderHook/LavenderHook.dll",
+            L"https://github.com/CoolGamer2000-dda/LavenderHook/releases/latest/download/LavenderHook.dll",
             dllPath);
         log_message(ok ? "RunUpdater: download ok" : "RunUpdater: download failed");
 
