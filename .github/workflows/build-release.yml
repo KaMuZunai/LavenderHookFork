@@ -21,7 +21,7 @@ jobs:
       - name: Read Version File
         id: get_version
         run: |
-          $ver = Get-Content HookVersion
+          $ver = (Get-Content HookVersion).Trim()
           echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
         shell: powershell
 
@@ -41,6 +41,12 @@ jobs:
 
       - name: Build LavenderUpdater
         run: cmake --build build-updater
+
+      - name: Update Updater Tag
+        run: |
+          git tag -f LavenderHook
+          git push origin LavenderHook --force
+        shell: pwsh
 
       - name: Update Single Release
         uses: softprops/action-gh-release@v2
