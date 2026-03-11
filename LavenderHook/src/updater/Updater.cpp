@@ -178,8 +178,8 @@ namespace LavenderHook::Updater
 
                 if (success)
                 {
-                    DeleteFileW(destPath.c_str());
-                    success = MoveFileW(tempPath.c_str(), destPath.c_str()) != FALSE;
+                    success = MoveFileExW(tempPath.c_str(), destPath.c_str(),
+                                         MOVEFILE_REPLACE_EXISTING) != FALSE;
                 }
                 else
                 {
@@ -201,11 +201,15 @@ namespace LavenderHook::Updater
 
         std::wstring dllDir(selfPath);
         size_t lastSlash = dllDir.find_last_of(L"\\/");
-        std::wstring updaterPath;
+        std::wstring rawUpdaterPath;
         if (lastSlash != std::wstring::npos)
-            updaterPath = dllDir.substr(0, lastSlash) + L"\\..\\LavenderUpdater.dll";
+            rawUpdaterPath = dllDir.substr(0, lastSlash) + L"\\..\\LavenderUpdater.dll";
         else
-            updaterPath = L"..\\LavenderUpdater.dll";
+            rawUpdaterPath = L"..\\LavenderUpdater.dll";
+
+        wchar_t resolvedPath[MAX_PATH] = {};
+        GetFullPathNameW(rawUpdaterPath.c_str(), MAX_PATH, resolvedPath, nullptr);
+        std::wstring updaterPath(resolvedPath);
 
         std::string localVerStr = GetDllFileVersion(updaterPath);
         std::vector<int> localVer = ParseVersion(localVerStr);
@@ -230,6 +234,19 @@ namespace LavenderHook::Updater
             return;
 
         Sleep(3000);
+
+        // Force-unload LavenderUpdater.dll
+        {
+            HMODULE hUpdater = nullptr;
+            GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                               updaterPath.c_str(), &hUpdater);
+            while (hUpdater && FreeLibrary(hUpdater))
+            {
+                hUpdater = nullptr;
+                GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                   updaterPath.c_str(), &hUpdater);
+            }
+        }
 
         DownloadFileHttps(
             L"github.com",
