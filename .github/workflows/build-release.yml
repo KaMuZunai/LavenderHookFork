@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -30,34 +31,37 @@ jobs:
         with:
           arch: x64
 
-      - name: Configure CMake (LavenderHook)
-        run: cmake -B build-hook -S LavenderHook -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
-
-      - name: Build LavenderHook
-        run: cmake --build build-hook
-
-      - name: Configure CMake (LavenderUpdater)
-        run: cmake -B build-updater -S LavenderUpdater -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
-
-      - name: Build LavenderUpdater
-        run: cmake --build build-updater
-
-      - name: Update Updater Tag
+      - name: Build Projects
         run: |
-          git tag -f LavenderHook
-          git push origin LavenderHook --force
-        shell: pwsh
+          cmake -B build-hook -S LavenderHook -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build-hook
+          cmake -B build-updater -S LavenderUpdater -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build-updater
 
-      - name: Update Single Release
+      - name: Update Latest Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: "LavenderHook ${{ steps.get_version.outputs.VERSION }}"
-          body: "Automated build of the latest version. Version: ${{ steps.get_version.outputs.VERSION }}"
+          body: "Automated build of the latest version."
           files: |
             build-hook/LavenderHook.dll
             build-updater/LavenderUpdater.dll
           make_latest: true
+          overwrite: true 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Updater Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: LavenderHook
+          name: "LavenderHook ${{ steps.get_version.outputs.VERSION }}"
+          body: "Compatibility release for the updater."
+          files: |
+            build-hook/LavenderHook.dll
+            build-updater/LavenderUpdater.dll
+          make_latest: false
           overwrite: true 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
