@@ -15,8 +15,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      - name: Read Version File
+        id: get_version
+        run: |
+          $ver = Get-Content Version
+          echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
+        shell: powershell
 
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -29,21 +34,12 @@ jobs:
       - name: Build
         run: cmake --build build
 
-      - name: Get Last Commit Message
-        id: vars
-        run: echo "message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Update Latest Release
+      - name: Update Single Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: Latest Development Build
-          body: |
-            **Last Update:** ${{ github.event.head_commit.timestamp }}
-            **Latest Changes:** ${{ steps.vars.outputs.message }}
-            
-            This release is automatically updated on every push to the main branch.
+          tag_name: LavenderHook
+          name: "${{ steps.get_version.outputs.VERSION }} LavenderHook"
+          body: ""
           files: build/LavenderHook.dll
           make_latest: true
         env:
