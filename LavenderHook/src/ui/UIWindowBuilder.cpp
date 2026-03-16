@@ -5,7 +5,7 @@
 #include "../assets/UITextures.h"
 #include "../windows/ToggleMenuWindow.h"
 #include "GUI.h"
-#include "../misc/SoundPlayer.h"
+#include "../sound/SoundPlayer.h"
 #include <cmath>
 
 constexpr float kDropdownArrowInset = 6.0f;   // left

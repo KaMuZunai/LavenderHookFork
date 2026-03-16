@@ -16,7 +16,16 @@ namespace LavenderHook::UI
 
         void SetVisible(bool v)
         {
-            m_target = v ? 1.0f : 0.0f;
+            if (v)
+            {
+                if (m_target < 1.0f && m_alpha > 0.0f)
+                    m_alpha = 1.0f;
+                m_target = 1.0f;
+            }
+            else
+            {
+                m_target = 0.0f;
+            }
         }
 
         void Update()

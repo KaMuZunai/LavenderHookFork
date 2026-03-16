@@ -1,6 +1,6 @@
 ﻿#include "XpManager.h"
 #include "XpTables.h"
-#include "../ui/components/Console.h"
+#include "../../ui/components/Console.h"
 
 #include <windows.h>
 #include <cmath>

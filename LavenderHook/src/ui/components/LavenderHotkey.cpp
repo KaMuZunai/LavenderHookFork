@@ -1,6 +1,6 @@
 ﻿#include "lavenderhotkey.h"
 #include "lavenderui.h"
-#include "../../misc/SoundPlayer.h"
+#include "../../sound/SoundPlayer.h"
 #include "../../input/VkTable.h"
 #include <unordered_map>
 

@@ -1,15 +1,16 @@
 ﻿#include "GeneralButtonsWindow.h"
 #include "functions/GeneralButtonActions.h"
 #include "functions/FunctionRegistry.h"
-#include "../misc/LogMonitor.h"
+#include "../misc/logmonitor/LogMonitor.h"
 #include "../misc/Globals.h"
 
 #include "../ui/UIWindowBuilder.h"
 #include "../ui/ActionsOverlay.h"
 #include "../ui/UIState.h"
-#include "../Misc/ConfigManager.h"
+#include "../config/ConfigManager.h"
 #include "../ui/components/LavenderHotkey.h"
 #include "../assets/UITextures.h"
+#include <chrono>
 
 namespace LavenderHook::UI::Windows {
 
@@ -345,6 +346,33 @@ void LavenderHook::UI::Windows::GeneralButtonsWindow::UpdateActions()
         TickButton5(false);
 
         return;
+    }
+
+    // If PreSummaryPhase has started, disable Auto Ready and Auto Force Ready Up for 2 seconds
+    {
+        static bool s_lockActive = false;
+        static std::chrono::steady_clock::time_point s_lockStart{};
+
+        const bool inPreSummary = LavenderHook::LogMonitor::IsPreSummaryPhase();
+        if (inPreSummary && !s_lockActive)
+        {
+            s_lockActive = true;
+            s_lockStart  = std::chrono::steady_clock::now();
+        }
+        else if (!inPreSummary)
+        {
+            s_lockActive = false;
+        }
+
+        if (s_lockActive)
+        {
+            const auto elapsed = std::chrono::steady_clock::now() - s_lockStart;
+            if (elapsed < std::chrono::seconds(2))
+            {
+                autoG.enabled     = false;
+                autoCtrlG.enabled = false;
+            }
+        }
     }
 
     // Apply timings

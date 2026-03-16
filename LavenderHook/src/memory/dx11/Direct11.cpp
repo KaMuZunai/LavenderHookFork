@@ -1,23 +1,23 @@
 #include "Direct11.h"
-#include "hooks.h"
+#include "../hooks.h"
 
-#include "../imgui/imgui.h"
-#include "../imgui/imgui_impl_win32.h"
-#include "../imgui/imgui_impl_dx11.h"
+#include "../../imgui/imgui.h"
+#include "../../imgui/imgui_impl_win32.h"
+#include "../../imgui/imgui_impl_dx11.h"
 
-#include "../assets/TextureLoader.h"
-#include "../misc/Globals.h"
-#include "../ui/GUI.h"
-#include "../ui/UIRegister.h"
-#include "../ui/UiDispatch.h"
-#include "../ui/components/console.h"
+#include "../../assets/TextureLoader.h"
+#include "../../misc/Globals.h"
+#include "../../ui/GUI.h"
+#include "../../ui/UIRegister.h"
+#include "../../ui/UiDispatch.h"
+#include "../../ui/components/console.h"
 
-#include "../windows/HoldToKillButton.h"
-#include "../windows/ToggleMenuButton.h"
+#include "../../windows/HoldToKillButton.h"
+#include "../../windows/ToggleMenuButton.h"
 
-#include "../input/Hotkeys.h"
+#include "../../input/Hotkeys.h"
 
-#include "../minhook/MinHook.h"
+#include "../../minhook/MinHook.h"
 
 #include <sstream>
 #include <iomanip>

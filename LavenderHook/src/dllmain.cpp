@@ -11,7 +11,7 @@
 #include "misc/Globals.h"
 #include "memory/hooks.h"
 #include "ui/components/console.h"
-#include "misc/LogMonitor.h"
+#include "misc/logmonitor/LogMonitor.h"
 #include "updater/Updater.h"
 
 static void HideAndDetachConsole()

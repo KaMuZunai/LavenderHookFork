@@ -1,14 +1,14 @@
 ﻿#include "MiscButtonsWindow.h"
 #include "functions/MiscButtonActions.h"
 #include "functions/FunctionRegistry.h"
-#include "../misc/LogMonitor.h"
+#include "../misc/logmonitor/LogMonitor.h"
 #include "../misc/Globals.h"
-#include "../misc/SoundPlayer.h"
+#include "../sound/SoundPlayer.h"
 
 #include "../ui/UIWindowBuilder.h"
 #include "../ui/UIState.h"
 #include "../ui/ActionsOverlay.h"
-#include "../Misc/ConfigManager.h"
+#include "../config/ConfigManager.h"
 #include "../ui/components/LavenderHotkey.h"
 #include "../assets/UITextures.h"
 

@@ -15,6 +15,8 @@ file(GLOB_RECURSE SRC_FILES
 
 add_library(LavenderHook SHARED ${SRC_FILES})
 
+target_sources(LavenderHook PRIVATE)
+
 target_compile_definitions(LavenderHook PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
 
 set(RESOURCE_FILES

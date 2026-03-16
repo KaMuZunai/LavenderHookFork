@@ -1,6 +1,6 @@
 #include "HideNotification.h"
 #include "../misc/Globals.h"
-#include "../misc/SoundPlayer.h"
+#include "../sound/SoundPlayer.h"
 #include "../imgui/imgui.h"
 
 #include <windows.h>

@@ -1,7 +1,7 @@
 #include "ParagonLevelWindow.h"
 #include "../misc/Globals.h"
-#include "../misc/XpManager.h"
-#include "../misc/XpTables.h"
+#include "../misc/xpsystem/XpManager.h"
+#include "../misc/xpsystem/XpTables.h"
 #include "../imgui/imgui.h"
 #include "../ui/components/LavenderFadeOut.h"
 

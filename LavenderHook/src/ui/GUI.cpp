@@ -4,7 +4,7 @@
 #include "components/LavenderFadeOut.h"
 #include "../assets/TextureLoader.h"
 #include "../assets/resources/resource.h"
-#include "../misc/SoundPlayer.h"
+#include "../sound/SoundPlayer.h"
 #include <windows.h>
 #include <winver.h>
 

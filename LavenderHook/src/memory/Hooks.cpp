@@ -1,7 +1,7 @@
 #include "hooks.h"
 
-#include "Direct11.h"
-#include "../input/FocusShim.h"
+#include "dx11/Direct11.h"
+#include "aobutils/AobScanner.h"
 
 GUI* gui = nullptr;
 
@@ -35,14 +35,10 @@ bool LavenderHook::Hooks::Hook()
         "LavenderHook: renderer hooks installed."
     );
 
-    // Install FocusShim
-    if (!LavenderHook::Input::FocusShim::Install())
+    // Initialize the AoB scanner
+    if (!LavenderHook::Memory::Initialize())
     {
-        LavenderConsole::GetInstance().Log("FocusShim: failed to install.");
-    }
-    else
-    {
-        LavenderConsole::GetInstance().Log("FocusShim: installed.");
+        LavenderConsole::GetInstance().Log("AobScanner: pattern not found in DDS-Win64-Shipping.exe");
     }
 
     // Shared hooks
@@ -89,13 +85,13 @@ bool LavenderHook::Hooks::Unhook()
 
     g_activeRenderer = RendererType::None;
 
-    // Remove FocusShim
-    LavenderHook::Input::FocusShim::Remove();
-
     // MinHook cleanup
     MH_DisableHook(MH_ALL_HOOKS);
     MH_RemoveHook(MH_ALL_HOOKS);
     MH_Uninitialize();
+
+    // Shutdown AoB scanner scaffold
+    LavenderHook::Memory::Shutdown();
 
     LavenderConsole::GetInstance().Log("LavenderHook: clean unhook complete.");
     return true;

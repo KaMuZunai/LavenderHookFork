@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <windows.h>
+#include <atomic>
 #include <string>
 
 class CodeEditor;
@@ -25,6 +26,7 @@ namespace LavenderHook::Globals
     inline bool show_gamepad_window = false;
     inline bool show_paragon_level_window = false;
     inline bool show_performance_overlay = true;
+    inline bool show_wave_window = true;
     inline bool show_menu_selector_window = false;
     inline bool show_menu_logo = true;
     inline bool show_profiles_window = false;
@@ -69,4 +71,12 @@ namespace LavenderHook::Globals
     inline HMODULE dll_module = nullptr;
     // Tray callback message id
     inline UINT tray_callback_message = WM_APP + 100;
+
+    // Enemy / boss HUD data
+    inline std::atomic<int>   enemies_alive{ 0 };
+    inline std::atomic<int>   enemies_max{ 0 };
+    inline std::atomic<bool>  boss_phase_active{ false };
+    inline std::atomic<float> boss_health_current{ 0.f };
+    inline std::atomic<float> boss_health_max{ 0.f };
+    inline std::atomic<int>   wave_time{ 0 };
 }

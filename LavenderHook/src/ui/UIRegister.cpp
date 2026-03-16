@@ -11,6 +11,7 @@
 #include "../ui/components/console.h"
 #include "../windows/MenuLogoWindow.h"
 #include "../windows/ParagonLevelWindow.h"
+#include "../windows/WaveTrackerWindow.h"
 
 
 void RegisterUIWindows()
@@ -124,6 +125,14 @@ void RegisterUIWindows()
                 LavenderHook::Globals::show_menu &&
                 LavenderHook::Globals::show_profiles_window
             );
+        },
+        nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        nullptr,
+        [] {
+            LavenderHook::UI::Windows::WaveTrackerWindow::Render();
         },
         nullptr
         });

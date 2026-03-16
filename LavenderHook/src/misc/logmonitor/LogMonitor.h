@@ -11,6 +11,7 @@ namespace LavenderHook {
             std::string gameDifficulty;
             std::string mapName;
             std::string bonusWave;      // can be empty
+            int         startWave = 0;  // starting wave from TryHostGame (0 if not specified)
             bool hardcore = false;
             bool riftMode = false;
             bool valid    = false;
@@ -21,5 +22,12 @@ namespace LavenderHook {
 
         bool        LatestLineHasAbort();
         SessionInfo GetCurrentSession();
+        int         GetCurrentWave();
+        bool        IsInTavern();
+        bool        IsBossWave();
+        bool        IsCombatPhase();
+        bool        IsCombatAborted();
+        bool        IsPreSummaryPhase();
+        int         GetMaxWave();
     }
 }
