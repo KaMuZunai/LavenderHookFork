@@ -79,6 +79,11 @@ When enabled, the Profiles window will be visible; otherwise, invisible.
 When enabled, will display a level icon that will gain experience by playing the game
 with a custom XP system. This does not provide any benefits outside of being fun.
 
+- **Wave Overlay**\
+When enabled, will display a wave progression bar during combat phases that displays
+enemies alive / max enemies, a boss health bar, time left and current wave / max wave
+due to the default in game bar often disappearing.
+
 - **Console**\
 When enabled, the Console will be visible; otherwise, invisible.
 
