@@ -28,6 +28,7 @@ namespace LavenderHook {
         bool        IsCombatPhase();
         bool        IsCombatAborted();
         bool        IsPreSummaryPhase();
+        bool        IsFinalBuildPhaseEnded();
         int         GetMaxWave();
     }
 }

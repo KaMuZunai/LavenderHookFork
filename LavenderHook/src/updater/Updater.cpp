@@ -155,6 +155,22 @@ namespace LavenderHook::Updater
                                WINHTTP_NO_REQUEST_DATA, 0, 0, 0) &&
             WinHttpReceiveResponse(hRequest, nullptr))
         {
+            DWORD statusCode = 0;
+            DWORD statusCodeSize = sizeof(statusCode);
+            WinHttpQueryHeaders(hRequest,
+                                WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+                                WINHTTP_HEADER_NAME_BY_INDEX,
+                                &statusCode, &statusCodeSize,
+                                WINHTTP_NO_HEADER_INDEX);
+
+            if (statusCode != 200)
+            {
+                WinHttpCloseHandle(hRequest);
+                WinHttpCloseHandle(hConnect);
+                WinHttpCloseHandle(hSession);
+                return false;
+            }
+
             std::wstring tempPath = destPath + L".tmp";
             HANDLE hFile = CreateFileW(tempPath.c_str(), GENERIC_WRITE, 0,
                                        nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -235,7 +251,7 @@ namespace LavenderHook::Updater
 
         Sleep(3000);
 
-        // Force-unload LavenderUpdater.dll
+        // Force unload LavenderUpdater.dll
         {
             HMODULE hUpdater = nullptr;
             GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,

@@ -53,6 +53,10 @@ namespace LavenderHook {
 		// skip the first BuildPhase update after a session
 		static std::atomic<bool> s_skipNextBuildPhase{ false };
 
+		// final build phase ended tracking
+		static std::atomic<int> s_lastEndedBuildPhase{ 0 };
+		static std::string      s_lastBuildPhaseEndedLine;
+
 		// combat phase tracking — wave-number pair matching
 		static std::atomic<bool> s_isCombatPhase{ false };
 		static std::string       s_lastCombatPhaseStartedLine;
@@ -225,6 +229,30 @@ namespace LavenderHook {
 			catch (...) { return -1; }
 		}
 
+		// Extract the wave number from a "BuildPhase_XX has Ended" line.
+		static int ParseBuildPhaseEnded(const std::string& line)
+		{
+			const std::string startMarker = "BuildPhase_";
+			const std::string endMarker   = " has Ended";
+
+			const size_t startPos = line.find(startMarker);
+			if (startPos == std::string::npos) return -1;
+
+			const size_t endPos = line.find(endMarker, startPos);
+			if (endPos == std::string::npos) return -1;
+
+			const std::string phaseName = line.substr(startPos, endPos - startPos);
+
+			const size_t lastUnderscore = phaseName.rfind('_');
+			if (lastUnderscore == std::string::npos) return -1;
+
+			const size_t numStart = lastUnderscore + 1;
+			if (numStart >= phaseName.size()) return -1;
+
+			try   { return std::stoi(phaseName.substr(numStart)); }
+			catch (...) { return -1; }
+		}
+
 		// Extract the wave number from a "CombatPhase_..._XX has Started" line.
 		static int ParseCombatPhaseStartedWave(const std::string& line)
 		{
@@ -310,6 +338,8 @@ namespace LavenderHook {
 							s_lastSeenCombatEndWave.store(0);
 							s_isPreSummaryPhase.store(false);
 							s_lastPreSummaryPhaseLine = GetLatestLineContaining("PreSummaryPhase_", "has Started");
+							s_lastEndedBuildPhase.store(0);
+							s_lastBuildPhaseEndedLine = GetLatestLineContaining("BuildPhase_", "has Ended");
 
 							if (parsed.valid && parsed.mapName != s_lastLoggedMapName) {
 							s_lastLoggedMapName = parsed.mapName;
@@ -360,8 +390,10 @@ namespace LavenderHook {
 												s_lastSeenCombatEndWave.store(0);
 												s_isPreSummaryPhase.store(false);
 												s_lastPreSummaryPhaseLine = GetLatestLineContaining("PreSummaryPhase_", "has Started");
+												s_lastEndedBuildPhase.store(0);
+												s_lastBuildPhaseEndedLine = GetLatestLineContaining("BuildPhase_", "has Ended");
 												{
-											std::lock_guard<std::mutex> lock(s_sessionMutex);
+												std::lock_guard<std::mutex> lock(s_sessionMutex);
 											s_currentSession = SessionInfo{};
 											s_currentSession.mapName = "Tavern";
 										}
@@ -466,10 +498,25 @@ namespace LavenderHook {
 																	}
 																	catch (...) {}
 
-																					// build phase / wave tracking
-																	try {
-																		auto found = GetLatestLineContaining("BuildPhase_", "has Started");
-																		if (!found.empty() && found != s_lastBuildPhaseLine)
+																																					// build phase ended / final wave tracking
+																					try {
+																						auto found = GetLatestLineContaining("BuildPhase_", "has Ended");
+																						if (!found.empty() && found != s_lastBuildPhaseEndedLine)
+																						{
+																							s_lastBuildPhaseEndedLine = found;
+																							if (!s_inTavern.load()) {
+																								const int endedPhase = ParseBuildPhaseEnded(found);
+																								if (endedPhase > 0)
+																									s_lastEndedBuildPhase.store(endedPhase);
+																							}
+																						}
+																					}
+																					catch (...) {}
+
+																																					// build phase / wave tracking
+																					try {
+																						auto found = GetLatestLineContaining("BuildPhase_", "has Started");
+																						if (!found.empty() && found != s_lastBuildPhaseLine)
 																		{
 																			s_lastBuildPhaseLine = found;
 																			if (!s_inTavern.load()) {
@@ -559,6 +606,13 @@ namespace LavenderHook {
 		bool IsPreSummaryPhase()
 		{
 			return s_isPreSummaryPhase.load();
+		}
+
+		bool IsFinalBuildPhaseEnded()
+		{
+			const int maxWave = GetMaxWave();
+			if (maxWave <= 0) return false;
+			return s_lastEndedBuildPhase.load() >= (maxWave - 1);
 		}
 
 		int GetMaxWave()

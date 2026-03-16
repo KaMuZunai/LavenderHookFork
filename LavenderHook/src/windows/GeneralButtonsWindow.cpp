@@ -348,18 +348,18 @@ void LavenderHook::UI::Windows::GeneralButtonsWindow::UpdateActions()
         return;
     }
 
-    // If PreSummaryPhase has started, disable Auto Ready and Auto Force Ready Up for 2 seconds
+    // If the final build phase has ended, disable Auto Ready and Force Ready Up for 2 seconds
     {
         static bool s_lockActive = false;
         static std::chrono::steady_clock::time_point s_lockStart{};
 
-        const bool inPreSummary = LavenderHook::LogMonitor::IsPreSummaryPhase();
-        if (inPreSummary && !s_lockActive)
+        const bool finalBuildEnded = LavenderHook::LogMonitor::IsFinalBuildPhaseEnded();
+        if (finalBuildEnded && !s_lockActive)
         {
             s_lockActive = true;
             s_lockStart  = std::chrono::steady_clock::now();
         }
-        else if (!inPreSummary)
+        else if (!finalBuildEnded)
         {
             s_lockActive = false;
         }
