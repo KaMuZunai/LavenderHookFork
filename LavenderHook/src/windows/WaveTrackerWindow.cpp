@@ -327,13 +327,29 @@ namespace LavenderHook::UI::Windows {
         const int  wave         = LavenderHook::LogMonitor::GetCurrentWave();
 
         const bool inCombat    = LavenderHook::LogMonitor::IsCombatPhase();
+        const bool inBossWave  = LavenderHook::LogMonitor::IsBossWave();
 
         const bool combatAborted = LavenderHook::LogMonitor::IsCombatAborted();
 
-        // 1.5s grace window
-        if (inCombat)
+        // reset all local states.
+        if (LavenderHook::LogMonitor::HasJustRestarted())
         {
-            s_combatGraceTimer = 1.5f;
+            s_combatGraceTimer   = 0.f;
+            s_reviveCheckTimer   = 0.f;
+            s_displayProg        = 0.f;
+            s_lastAlive          = -1;
+            s_lastMax            = -1;
+            s_lastBoss           = false;
+            s_lastValidBossHpMax = 0.f;
+            s_yellowCommitted    = 0.f;
+            s_yellowDisplayProg  = 0.f;
+            s_yellowTimer        = 0.f;
+        }
+
+        // 1.5s grace window
+        if (inCombat || inBossWave)
+        {
+            s_combatGraceTimer = 1.0f;
             s_reviveCheckTimer = 0.f;
         }
         else
@@ -346,7 +362,7 @@ namespace LavenderHook::UI::Windows {
             if (s_reviveCheckTimer >= 0.1f)
             {
                 s_reviveCheckTimer = 0.f;
-                if (LavenderHook::LogMonitor::IsCombatPhase())
+                if (LavenderHook::LogMonitor::IsCombatPhase() || LavenderHook::LogMonitor::IsBossWave())
                     s_combatGraceTimer = 1.5f;
             }
         }
@@ -357,12 +373,13 @@ namespace LavenderHook::UI::Windows {
             && !LavenderHook::LogMonitor::IsInTavern()
             && !combatAborted
             && !inCombat
+            && !inBossWave
             && (wave > 0 || (isBoss && hasBossData) || (!isBoss && hasEnemyData) || timeVal > 0);
 
         const bool wantCombat  = LavenderHook::Globals::show_wave_window
             && !LavenderHook::LogMonitor::IsInTavern()
             && !combatAborted
-            && (inCombat || s_combatGraceTimer > 0.f || timeVal > 0);
+            && (inCombat || inBossWave || s_combatGraceTimer > 0.f);
 
         s_fade.Tick(wantCompact);
         s_combatFade.Tick(wantCombat);

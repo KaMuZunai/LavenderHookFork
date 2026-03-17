@@ -21,6 +21,7 @@ namespace LavenderHook {
         void Stop();
 
         bool        LatestLineHasAbort();
+        bool        HasJustRestarted();
         SessionInfo GetCurrentSession();
         int         GetCurrentWave();
         bool        IsInTavern();
