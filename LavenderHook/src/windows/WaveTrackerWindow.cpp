@@ -29,12 +29,14 @@ namespace LavenderHook::UI::Windows {
         static float s_yellowTimer         = 0.f;
         static float s_combatGraceTimer    = 0.f;
         static float s_reviveCheckTimer    = 0.f;
+        static float s_waveElapsed         = 0.f;
+        static bool  s_lastInCombatOrBoss  = false;
     }
 
     static void RenderCombatBar(float alpha, float drawProg, bool isBoss,
                                 int displayAlive, int maxE,
                                 float bossHp, float bossHpMax, int wave,
-                                float yellowProg)
+                                float yellowProg, float waveElapsed)
     {
         const int   maxWave  = LavenderHook::LogMonitor::GetMaxWave();
         const int   timeVal  = LavenderHook::Globals::wave_time.load();
@@ -290,10 +292,17 @@ namespace LavenderHook::UI::Windows {
             timeStr += buf;
         }
 
+        const int   elSec  = static_cast<int>(waveElapsed);
+        char elBuf[8];
+        std::snprintf(elBuf, sizeof(elBuf), "%d:%02d", elSec / 60, elSec % 60);
+
         const ImVec2 timeSz  = font->CalcTextSizeA(smallSz, FLT_MAX, 0.f, timeStr.c_str());
+        const ImVec2 elSz    = font->CalcTextSizeA(smallSz, FLT_MAX, 0.f, elBuf);
         const float  wTextX  = barX + barW * 0.13f;
         const float  tTextX  = barX + barW * 0.87f - timeSz.x;
+        const float  elX     = barX + barW * 0.5f - elSz.x * 0.5f;
         dl->AddText(font, smallSz, ImVec2(wTextX, infoY), dimCol, waveStr.c_str());
+        dl->AddText(font, smallSz, ImVec2(elX,    infoY), dimCol, elBuf);
         dl->AddText(font, smallSz, ImVec2(tTextX, infoY), dimCol, timeStr.c_str());
 
         ImGui::End();
@@ -344,6 +353,8 @@ namespace LavenderHook::UI::Windows {
             s_yellowCommitted    = 0.f;
             s_yellowDisplayProg  = 0.f;
             s_yellowTimer        = 0.f;
+            s_waveElapsed        = 0.f;
+            s_lastInCombatOrBoss = false;
         }
 
         // 1.5s grace window
@@ -368,6 +379,16 @@ namespace LavenderHook::UI::Windows {
         }
         else
             s_reviveCheckTimer = 0.f;
+
+        // Wave elapsed timer — counts up while combat or boss phase is active
+        {
+            const bool activePhase = inCombat || inBossWave;
+            if (activePhase && !s_lastInCombatOrBoss)
+                s_waveElapsed = 0.f;
+            if (activePhase)
+                s_waveElapsed += ImGui::GetIO().DeltaTime;
+            s_lastInCombatOrBoss = activePhase;
+        }
 
         const bool wantCompact = LavenderHook::Globals::show_wave_window
             && !LavenderHook::LogMonitor::IsInTavern()
@@ -441,7 +462,7 @@ namespace LavenderHook::UI::Windows {
         if (s_combatFade.ShouldRender())
             RenderCombatBar(s_combatFade.Alpha(), drawProg, isBoss,
                             displayAlive, maxE, bossHp, effectiveBossHpMax, wave,
-                            yellowProg);
+                            yellowProg, s_waveElapsed);
 
         if (!s_fade.ShouldRender()) return;
         const float alpha = s_fade.Alpha();
