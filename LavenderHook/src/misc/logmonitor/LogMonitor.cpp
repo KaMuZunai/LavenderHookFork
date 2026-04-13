@@ -265,6 +265,24 @@ namespace LavenderHook {
                 return;
             }
 
+            // Boss phase aborted
+            if (line.find("BossPhase_") != std::string::npos
+                && line.find("has been Aborted") != std::string::npos)
+            {
+                s_combatAborted.store(true);
+                s_isCombatPhase.store(false);
+                s_isBossWave.store(false);
+                Globals::boss_phase_active.store(false);
+                if (!catchup && Globals::stop_on_fail)
+                {
+                    s_hasNewAbort.store(true);
+                    s_lastAbortTime = std::chrono::steady_clock::now();
+                    try { LavenderConsole::GetInstance().Log("LogMonitor: stopped actions"); }
+                    catch (...) {}
+                }
+                return;
+            }
+
             // All remaining phase lines are irrelevant while in the Tavern
             if (s_inTavern.load()) return;
 
