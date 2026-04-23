@@ -268,6 +268,7 @@ static void SaveMenuSettings()
     f << "show_server=" << BoolToStr(LavenderHook::Globals::show_server) << "\n";
     f << "show_general_window=" << BoolToStr(LavenderHook::Globals::show_general_window) << "\n";
     f << "show_misc_window=" << BoolToStr(LavenderHook::Globals::show_misc_window) << "\n";
+    f << "show_buffing_window=" << BoolToStr(LavenderHook::Globals::show_buffing_window) << "\n";
     f << "show_profiles_window=" << BoolToStr(LavenderHook::Globals::show_profiles_window) << "\n";
     f << "show_gamepad_window=" << BoolToStr(LavenderHook::Globals::show_gamepad_window) << "\n";
     f << "show_paragon_level_window=" << BoolToStr(LavenderHook::Globals::show_paragon_level_window) << "\n";
@@ -311,6 +312,7 @@ void LoadMenuSettings()
         if (line.rfind("show_server", 0) == 0)               ReadBool(line, LavenderHook::Globals::show_server);
         if (line.rfind("show_general_window", 0) == 0)       ReadBool(line, LavenderHook::Globals::show_general_window);
         if (line.rfind("show_misc_window", 0) == 0)          ReadBool(line, LavenderHook::Globals::show_misc_window);
+        if (line.rfind("show_buffing_window", 0) == 0)       ReadBool(line, LavenderHook::Globals::show_buffing_window);
         if (line.rfind("show_profiles_window", 0) == 0)          ReadBool(line, LavenderHook::Globals::show_profiles_window);
         if (line.rfind("show_gamepad_window", 0) == 0)       ReadBool(line, LavenderHook::Globals::show_gamepad_window);
         if (line.rfind("show_paragon_level_window", 0) == 0) ReadBool(line, LavenderHook::Globals::show_paragon_level_window);
@@ -404,7 +406,7 @@ namespace LavenderHook {
                 contentHeight += 4 * rowH * perfLayoutT;
 
                 float windowsLayoutT = (s_windowsAnim > kHideThreshold) ? s_windowsAnim : 0.0f;
-                contentHeight += 8 * rowH * windowsLayoutT;
+                contentHeight += 9 * rowH * windowsLayoutT;
 
                 // audio section
                 contentHeight += rowH; // separator/label
@@ -563,6 +565,12 @@ namespace LavenderHook {
                         bW = LavenderHook::Globals::show_misc_window;
                         if (ImGui::Checkbox("Misc Window", &bW)) {
                             LavenderHook::Globals::show_misc_window = bW;
+                            SaveMenuSettings();
+                            LavenderHook::Audio::PlayToggleSound(bW);
+                        }
+                        bW = LavenderHook::Globals::show_buffing_window;
+                        if (ImGui::Checkbox("Buffing Window", &bW)) {
+                            LavenderHook::Globals::show_buffing_window = bW;
                             SaveMenuSettings();
                             LavenderHook::Audio::PlayToggleSound(bW);
                         }

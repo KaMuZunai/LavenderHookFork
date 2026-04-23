@@ -19,10 +19,9 @@ namespace LavenderHook::UI::Windows {
         UIWindowBuilder g_window("General");
         bool g_inited = false;
 
-        // UI owned settings 
+        // UI owned settings
         int g_autoGHoldMs = 2000;
         int g_autoGDelayMs = 3000;
-        int g_autoFIntervalMs = 8000;
         int g_autoGPressKey = 0;
         int g_autoCtrlGCtrlKey = 0;
         int g_autoCtrlGGKey = 0;
@@ -34,20 +33,12 @@ namespace LavenderHook::UI::Windows {
         int g_autoClickIntervalMs = 100;
 
         int g_autoGHotkey = 0;
-        int g_autoFHotkey = 0;
-        int g_autoFPressKey = 0;
         int g_autoCtrlGHotkey = 0;
         int g_skipHotkey = 0;
         int g_autoClickHotkey = 0;
 
-        int g_altAutoFIntervalMs = 8000;
-        int g_altAutoFPressKey = 0;
-        int g_altAutoFHotkey = 0;
-
         // Runtime hotkeys
         LavenderHook::UI::Lavender::Hotkey g_rtAutoG;
-        LavenderHook::UI::Lavender::Hotkey g_rtAutoF;
-        LavenderHook::UI::Lavender::Hotkey g_rtAltAutoF;
         LavenderHook::UI::Lavender::Hotkey g_rtAutoCtrlG;
         LavenderHook::UI::Lavender::Hotkey g_rtSkipCut;
 
@@ -64,8 +55,6 @@ namespace LavenderHook::UI::Windows {
         cfg.Load("general_buttons.ini");
 
         auto& autoG = g_state.Toggle("Auto G");
-        auto& autoF = g_state.Toggle("Auto F");
-        auto& altAutoF = g_state.Toggle("Alt Flash Buff");
         auto& autoCtrlG = g_state.Toggle("Auto Ctrl+G");
         auto& skipCut = g_state.Toggle("Skip Cutscene");
         auto& autoClick = g_state.Toggle("Auto Clicker");
@@ -73,8 +62,6 @@ namespace LavenderHook::UI::Windows {
         // Ensure defaults
         g_autoGHotkey = cfg.EnsureInt("auto_g_hotkey", 0);
         g_autoGPressKey = cfg.EnsureInt("auto_g_press_key", 'G');
-        g_autoFHotkey = cfg.EnsureInt("auto_f_hotkey", 0);
-        g_autoFPressKey = cfg.EnsureInt("auto_f_press_key", 'F');
         g_autoCtrlGCtrlKey = cfg.EnsureInt("auto_ctrlg_ctrl_key", VK_CONTROL);
         g_autoCtrlGGKey = cfg.EnsureInt("auto_ctrlg_g_key", 'G');
         g_skipPressKey = cfg.EnsureInt("skip_cutscene_key", VK_SPACE);
@@ -83,27 +70,19 @@ namespace LavenderHook::UI::Windows {
 
         g_autoGHoldMs = cfg.EnsureInt("auto_g_hold_ms", 2000);
         g_autoGDelayMs = cfg.EnsureInt("auto_g_delay_ms", 3000);
-        g_autoFIntervalMs = cfg.EnsureInt("auto_f_interval_ms", 8000);
         g_autoCtrlGHoldMs = cfg.EnsureInt("auto_ctrlg_hold_ms", 5000);
         g_autoCtrlGDelayMs = cfg.EnsureInt("auto_ctrlg_delay_ms", 10000);
         g_skipHoldMs = cfg.EnsureInt("skip_hold_ms", 2000);
         g_skipDelayMs = cfg.EnsureInt("skip_delay_ms", 4000);
         g_autoClickIntervalMs = cfg.EnsureInt("auto_click_interval_ms", 100);
         g_autoClickHotkey = cfg.EnsureInt("auto_click_hotkey", 0);
-        g_altAutoFHotkey = cfg.EnsureInt("alt_auto_f_hotkey", 0);
-        g_altAutoFPressKey = cfg.EnsureInt("alt_auto_f_press_key", 0x0209); // GPVK_RB
-        g_altAutoFIntervalMs = cfg.EnsureInt("alt_auto_f_interval_ms", 8000);
 
         // Bind runtime hotkeys
         g_rtAutoG.keyVK = &g_autoGHotkey;
-        g_rtAutoF.keyVK = &g_autoFHotkey;
-        g_rtAltAutoF.keyVK = &g_altAutoFHotkey;
         g_rtAutoCtrlG.keyVK = &g_autoCtrlGHotkey;
         g_rtSkipCut.keyVK = &g_skipHotkey;
 
         // configure action press keys
-        LavenderHook::UI::Functions::SetAutoFKey(g_autoFPressKey);
-        LavenderHook::UI::Functions::SetAltAutoFKey(g_altAutoFPressKey);
         LavenderHook::UI::Functions::SetAutoGKey(g_autoGPressKey);
         LavenderHook::UI::Functions::SetAutoCtrlGCtrlKey(g_autoCtrlGCtrlKey);
         LavenderHook::UI::Functions::SetAutoCtrlGGKey(g_autoCtrlGGKey);
@@ -115,9 +94,7 @@ namespace LavenderHook::UI::Windows {
         // Register toggles with the global function registry
         {
             auto& reg = LavenderHook::UI::FunctionRegistry::Instance();
-            reg.Register("Ready Up",     &autoG.enabled);
-            reg.Register("Flash Buff",   &autoF.enabled);
-            reg.Register("Alt Flash Buff", &altAutoF.enabled);
+            reg.Register("Ready Up",      &autoG.enabled);
             reg.Register("Force Ready Up", &autoCtrlG.enabled);
             reg.Register("Skip Cutscene",  &skipCut.enabled);
             reg.Register("Auto Clicker",   &autoClick.enabled);
@@ -136,24 +113,6 @@ Delay - Delay before it repeats after the last action has finished.)")
             .AddDropdownButton("Key:", &g_autoGPressKey)
             .AddDropdownTimingSeconds("Hold:", &g_autoGHoldMs, 100, 20000)
             .AddDropdownTimingSeconds("Delay:", &g_autoGDelayMs, 100, 20000)
-
-            .AddToggleDropdown("Flash Buff", &autoF.enabled, &g_autoFHotkey)
-            .AddItemDescription(R"(Presses the Flash Heal Button by pressing the configured button.
-additional configurations:
-Hotkey - Select Hotkey to toggle the button. (Esc binds to None)
-Key - Key that will be pressed when button is enabled. (Default: F)
-Interval - Time it takes for the action to repeat.)")
-            .AddDropdownButton("Key:", &g_autoFPressKey)
-            .AddDropdownTimingSeconds("Interval:", &g_autoFIntervalMs, 100, 20000)
-
-            .AddToggleDropdown("Alt Flash Buff", &altAutoF.enabled, &g_altAutoFHotkey)
-            .AddItemDescription(R"(Presses the Flash Heal Button by pressing the configured button (used for alt).
-additional configurations:
-Hotkey - Select Hotkey to toggle the button. (Esc binds to None)
-Key - Key that will be pressed when button is enabled. (Default: Right Bumper)
-Interval - Time it takes for the action to repeat.)")
-            .AddDropdownButton("Key:", &g_altAutoFPressKey)
-            .AddDropdownTimingSeconds("Interval:", &g_altAutoFIntervalMs, 100, 20000)
 
             .AddToggleDropdown("Force Ready Up", &autoCtrlG.enabled, &g_autoCtrlGHotkey)
             .AddItemDescription(R"(Presses the Force Ready Up Combo by Pressing the configured buttons.
@@ -198,20 +157,17 @@ Interval - Time it takes for the action to repeat.)")
         InitOnce();
 
         // Snapshot previous values
-        static int prevVals[21] = {
-            g_autoGHotkey, g_autoFHotkey, g_autoCtrlGHotkey, g_skipHotkey, g_autoClickHotkey, g_autoFPressKey, g_autoGPressKey, g_autoCtrlGCtrlKey, g_autoCtrlGGKey, g_skipPressKey,
-            g_autoGHoldMs, g_autoGDelayMs, g_autoFIntervalMs,
+        static int prevVals[15] = {
+            g_autoGHotkey, g_autoCtrlGHotkey, g_skipHotkey, g_autoClickHotkey,
+            g_autoGPressKey, g_autoCtrlGCtrlKey, g_autoCtrlGGKey, g_skipPressKey,
+            g_autoGHoldMs, g_autoGDelayMs,
             g_autoCtrlGHoldMs, g_autoCtrlGDelayMs,
-            g_skipHoldMs, g_skipDelayMs, g_autoClickIntervalMs,
-            g_altAutoFHotkey, g_altAutoFPressKey, g_altAutoFIntervalMs
+            g_skipHoldMs, g_skipDelayMs, g_autoClickIntervalMs
         };
 
         g_window.Render(wantVisible);
 
         // If the press-key was changed in the UI, propagate immediately to runtime actions
-        if (LavenderHook::UI::Functions::GetAutoFKey() != g_autoFPressKey) {
-            LavenderHook::UI::Functions::SetAutoFKey(g_autoFPressKey);
-        }
         if (LavenderHook::UI::Functions::GetAutoGKey() != g_autoGPressKey) {
             LavenderHook::UI::Functions::SetAutoGKey(g_autoGPressKey);
         }
@@ -224,21 +180,18 @@ Interval - Time it takes for the action to repeat.)")
         if (LavenderHook::UI::Functions::GetSkipCutsceneKey() != g_skipPressKey) {
             LavenderHook::UI::Functions::SetSkipCutsceneKey(g_skipPressKey);
         }
-        if (LavenderHook::UI::Functions::GetAltAutoFKey() != g_altAutoFPressKey) {
-            LavenderHook::UI::Functions::SetAltAutoFKey(g_altAutoFPressKey);
-        }
 
         // Detect changes
-        int currVals[21] = {
-            g_autoGHotkey, g_autoFHotkey, g_autoCtrlGHotkey, g_skipHotkey, g_autoClickHotkey, g_autoFPressKey, g_autoGPressKey, g_autoCtrlGCtrlKey, g_autoCtrlGGKey, g_skipPressKey,
-            g_autoGHoldMs, g_autoGDelayMs, g_autoFIntervalMs,
+        int currVals[15] = {
+            g_autoGHotkey, g_autoCtrlGHotkey, g_skipHotkey, g_autoClickHotkey,
+            g_autoGPressKey, g_autoCtrlGCtrlKey, g_autoCtrlGGKey, g_skipPressKey,
+            g_autoGHoldMs, g_autoGDelayMs,
             g_autoCtrlGHoldMs, g_autoCtrlGDelayMs,
-            g_skipHoldMs, g_skipDelayMs, g_autoClickIntervalMs,
-            g_altAutoFHotkey, g_altAutoFPressKey, g_altAutoFIntervalMs
+            g_skipHoldMs, g_skipDelayMs, g_autoClickIntervalMs
         };
 
         bool changed = false;
-        for (int i = 0; i < 20; ++i)
+        for (int i = 0; i < 15; ++i)
         {
             if (prevVals[i] != currVals[i])
             {
@@ -251,40 +204,32 @@ Interval - Time it takes for the action to repeat.)")
         {
             auto& cfg = Config::Store::Instance("general_buttons.ini");
 
-            cfg.SetInt("auto_g_hotkey", g_autoGHotkey);
-            cfg.SetInt("auto_f_hotkey", g_autoFHotkey);
-            cfg.SetInt("auto_g_press_key", g_autoGPressKey);
-            cfg.SetInt("skip_cutscene_key", g_skipPressKey);
-            cfg.SetInt("auto_ctrlg_ctrl_key", g_autoCtrlGCtrlKey);
-            cfg.SetInt("auto_ctrlg_g_key", g_autoCtrlGGKey);
-            cfg.SetInt("auto_ctrlg_hotkey", g_autoCtrlGHotkey);
-            cfg.SetInt("skip_cutscene_hotkey", g_skipHotkey);
-            cfg.SetInt("auto_click_hotkey", g_autoClickHotkey);
-            cfg.SetInt("auto_f_press_key", g_autoFPressKey);
-            cfg.SetInt("alt_auto_f_hotkey", g_altAutoFHotkey);
-            cfg.SetInt("alt_auto_f_press_key", g_altAutoFPressKey);
+            cfg.SetInt("auto_g_hotkey",          g_autoGHotkey);
+            cfg.SetInt("auto_g_press_key",         g_autoGPressKey);
+            cfg.SetInt("skip_cutscene_key",         g_skipPressKey);
+            cfg.SetInt("auto_ctrlg_ctrl_key",       g_autoCtrlGCtrlKey);
+            cfg.SetInt("auto_ctrlg_g_key",          g_autoCtrlGGKey);
+            cfg.SetInt("auto_ctrlg_hotkey",         g_autoCtrlGHotkey);
+            cfg.SetInt("skip_cutscene_hotkey",      g_skipHotkey);
+            cfg.SetInt("auto_click_hotkey",         g_autoClickHotkey);
 
             // propagate press keys to runtime actions
-            LavenderHook::UI::Functions::SetAutoFKey(g_autoFPressKey);
-            LavenderHook::UI::Functions::SetAltAutoFKey(g_altAutoFPressKey);
             LavenderHook::UI::Functions::SetAutoGKey(g_autoGPressKey);
             LavenderHook::UI::Functions::SetAutoCtrlGCtrlKey(g_autoCtrlGCtrlKey);
             LavenderHook::UI::Functions::SetAutoCtrlGGKey(g_autoCtrlGGKey);
             LavenderHook::UI::Functions::SetSkipCutsceneKey(g_skipPressKey);
 
-            cfg.SetInt("auto_g_hold_ms", g_autoGHoldMs);
-            cfg.SetInt("auto_g_delay_ms", g_autoGDelayMs);
-            cfg.SetInt("auto_f_interval_ms", g_autoFIntervalMs);
-            cfg.SetInt("auto_ctrlg_hold_ms", g_autoCtrlGHoldMs);
-            cfg.SetInt("auto_ctrlg_delay_ms", g_autoCtrlGDelayMs);
-            cfg.SetInt("skip_hold_ms", g_skipHoldMs);
-            cfg.SetInt("skip_delay_ms", g_skipDelayMs);
-            cfg.SetInt("auto_click_interval_ms", g_autoClickIntervalMs);
-            cfg.SetInt("alt_auto_f_interval_ms", g_altAutoFIntervalMs);
+            cfg.SetInt("auto_g_hold_ms",            g_autoGHoldMs);
+            cfg.SetInt("auto_g_delay_ms",           g_autoGDelayMs);
+            cfg.SetInt("auto_ctrlg_hold_ms",        g_autoCtrlGHoldMs);
+            cfg.SetInt("auto_ctrlg_delay_ms",       g_autoCtrlGDelayMs);
+            cfg.SetInt("skip_hold_ms",              g_skipHoldMs);
+            cfg.SetInt("skip_delay_ms",             g_skipDelayMs);
+            cfg.SetInt("auto_click_interval_ms",    g_autoClickIntervalMs);
 
             cfg.Save();
 
-            for (int i = 0; i < 20; ++i)
+            for (int i = 0; i < 15; ++i)
                 prevVals[i] = currVals[i];
         }
     }
@@ -301,16 +246,12 @@ void LavenderHook::UI::Windows::GeneralButtonsWindow::UpdateActions()
     using LavenderHook::UI::Actions::SetActive;
 
     auto& autoG = g_state.Toggle("Auto G");
-    auto& autoF = g_state.Toggle("Auto F");
-    auto& altAutoF = g_state.Toggle("Alt Flash Buff");
     auto& autoCtrlG = g_state.Toggle("Auto Ctrl+G");
     auto& skipCut = g_state.Toggle("Skip Cutscene");
     auto& autoClick = g_state.Toggle("Auto Clicker");
 
     // Poll runtime hotkeys
     g_rtAutoG.UpdateToggle(autoG.enabled);
-    g_rtAutoF.UpdateToggle(autoF.enabled);
-    g_rtAltAutoF.UpdateToggle(altAutoF.enabled);
     g_rtAutoCtrlG.UpdateToggle(autoCtrlG.enabled);
     g_rtSkipCut.UpdateToggle(skipCut.enabled);
 
@@ -323,24 +264,18 @@ void LavenderHook::UI::Windows::GeneralButtonsWindow::UpdateActions()
     if (LavenderHook::Globals::stop_on_fail && LavenderHook::LogMonitor::LatestLineHasAbort())
     {
         autoG.enabled = false;
-        autoF.enabled = false;
-        altAutoF.enabled = false;
         autoCtrlG.enabled = false;
         skipCut.enabled = false;
         autoClick.enabled = false;
 
         // Update overlay
         SetActive("Ready Up", false);
-        SetActive("Flash Buff", false);
-        SetActive("Alt Flash Buff", false);
         SetActive("Force Ready Up", false);
         SetActive("Skip Cutscene", false);
         SetActive("Auto Clicker", false);
 
         // Ensure actions are stopped by passing false to tickers
         TickButton1(false);
-        TickButton2(false);
-        TickButton6(false);
         TickButton3(false);
         TickButton4(false);
         TickButton5(false);
@@ -377,23 +312,17 @@ void LavenderHook::UI::Windows::GeneralButtonsWindow::UpdateActions()
 
     // Apply timings
     SetAutoGTimings(g_autoGHoldMs, g_autoGDelayMs);
-    SetAutoFTiming(g_autoFIntervalMs);
-    SetAltAutoFTiming(g_altAutoFIntervalMs);
     SetAutoCtrlGTimings(g_autoCtrlGHoldMs, g_autoCtrlGDelayMs);
     SetSkipCutsceneTimings(g_skipHoldMs, g_skipDelayMs);
 
     // Drive actions
     TickButton1(autoG.enabled);
-    TickButton2(autoF.enabled);
-    TickButton6(altAutoF.enabled);
     TickButton3(autoCtrlG.enabled);
     TickButton4(skipCut.enabled);
     TickButton5(autoClick.enabled);
 
     // Overlay
     SetActive("Ready Up", autoG.enabled);
-    SetActive("Flash Buff", autoF.enabled);
-    SetActive("Alt Flash Buff", altAutoF.enabled);
     SetActive("Force Ready Up", autoCtrlG.enabled);
     SetActive("Skip Cutscene", skipCut.enabled);
     SetActive("Auto Clicker", autoClick.enabled);

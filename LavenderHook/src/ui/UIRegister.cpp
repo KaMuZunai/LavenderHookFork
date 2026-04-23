@@ -1,7 +1,9 @@
 #include "../ui/UIRegister.h"
 #include "../misc/Globals.h"
+#include "../memory/aobutils/AobScanner.h"
 
 #include "../windows/GeneralButtonsWindow.h"
+#include "../windows/BuffingWindow.h"
 #include "../windows/MiscButtonsWindow.h"
 #include "../windows/GamepadWindow.h"
 #include "../windows/PerformanceOverlayWindow.h"
@@ -32,12 +34,26 @@ void RegisterUIWindows()
 
     ui.Register(UIWindowEntry{
         [] {
+            LavenderHook::Memory::Tick();
             LavenderHook::UI::Windows::GeneralButtonsWindow::UpdateActions();
         },
         [] {
             LavenderHook::UI::Windows::GeneralButtonsWindow::Render(
                 LavenderHook::Globals::show_menu &&
                 LavenderHook::Globals::show_general_window
+            );
+        },
+        nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        [] {
+            LavenderHook::UI::Windows::BuffingWindow::UpdateActions();
+        },
+        [] {
+            LavenderHook::UI::Windows::BuffingWindow::Render(
+                LavenderHook::Globals::show_menu &&
+                LavenderHook::Globals::show_buffing_window
             );
         },
         nullptr

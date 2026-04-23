@@ -23,6 +23,7 @@ namespace LavenderHook::Globals
     inline bool show_info_overlay = true;
     inline bool show_general_window = true;
     inline bool show_misc_window = true;
+    inline bool show_buffing_window = true;
     inline bool show_gamepad_window = false;
     inline bool show_paragon_level_window = false;
     inline bool show_performance_overlay = true;
@@ -78,5 +79,11 @@ namespace LavenderHook::Globals
     inline std::atomic<bool>  boss_phase_active{ false };
     inline std::atomic<float> boss_health_current{ 0.f };
     inline std::atomic<float> boss_health_max{ 0.f };
+
+    // Player mana data
+    inline std::atomic<float> mana_current{ 0.f };
+    inline std::atomic<float> mana_max{ 0.f };
+
+    // Wave Timer
     inline std::atomic<int>   wave_time{ 0 };
 }

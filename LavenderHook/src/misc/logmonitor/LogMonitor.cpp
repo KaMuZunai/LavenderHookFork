@@ -151,7 +151,20 @@ namespace LavenderHook {
 
         static void ApplyNewSession(const SessionInfo& parsed)
         {
-            { std::lock_guard<std::mutex> lock(s_sessionMutex); s_currentSession = parsed; }
+            {
+                std::lock_guard<std::mutex> lock(s_sessionMutex);
+                if (parsed.gameMode.empty() && !s_currentSession.gameMode.empty())
+                {
+                    SessionInfo merged = parsed;
+                    merged.gameMode       = s_currentSession.gameMode;
+                    merged.gameDifficulty = s_currentSession.gameDifficulty;
+                    s_currentSession = merged;
+                }
+                else
+                {
+                    s_currentSession = parsed;
+                }
+            }
             s_inTavern.store(false);
             s_currentWave.store(parsed.startWave > 0 ? parsed.startWave : 1);
             s_skipNextBuildPhase.store(parsed.startWave > 0);

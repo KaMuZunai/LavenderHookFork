@@ -1,6 +1,7 @@
 ﻿#include "GeneralButtonActions.h"
 #include "../../input/InputAutomation.h"
 #include "../../misc/Globals.h"
+#include "../../memory/Hooks.h"
 
 #include <chrono>
 #include <windows.h>
@@ -37,14 +38,6 @@ namespace LavenderHook {
             static int g_autoG_hold_ms = 2000;
             static int g_autoG_delay_ms = 3000;
 
-            // Auto F
-            static int g_autoF_interval_ms = 8000;
-            static int g_autoF_key_vk = 'F';
-
-            // Alt Flash Buff
-            static int g_altAutoF_interval_ms = 8000;
-            static int g_altAutoF_key_vk = 0x0209; // GPVK_RB
-
             // Auto G press key
             static int g_autoG_key_vk = 'G';
 
@@ -77,10 +70,6 @@ namespace LavenderHook {
 
                 g_autoG_hold_ms = cfg.GetInt("auto_g_hold_ms", 2000);
                 g_autoG_delay_ms = cfg.GetInt("auto_g_delay_ms", 3000);
-                g_autoF_interval_ms = cfg.GetInt("auto_f_interval_ms", 8000);
-                g_autoF_key_vk = cfg.GetInt("auto_f_press_key", g_autoF_key_vk);
-                g_altAutoF_interval_ms = cfg.GetInt("alt_auto_f_interval_ms", 8000);
-                g_altAutoF_key_vk = cfg.GetInt("alt_auto_f_press_key", g_altAutoF_key_vk);
                 g_autoG_key_vk = cfg.GetInt("auto_g_press_key", g_autoG_key_vk);
                 g_autoCtrlg_ctrl_vk = cfg.GetInt("auto_ctrlg_ctrl_key", g_autoCtrlg_ctrl_vk);
                 g_autoCtrlg_g_vk = cfg.GetInt("auto_ctrlg_g_key", g_autoCtrlg_g_vk);
@@ -101,10 +90,6 @@ namespace LavenderHook {
 
                 cfg.SetInt("auto_g_hold_ms", g_autoG_hold_ms);
                 cfg.SetInt("auto_g_delay_ms", g_autoG_delay_ms);
-                cfg.SetInt("auto_f_interval_ms", g_autoF_interval_ms);
-                cfg.SetInt("auto_f_press_key", g_autoF_key_vk);
-                cfg.SetInt("alt_auto_f_interval_ms", g_altAutoF_interval_ms);
-                cfg.SetInt("alt_auto_f_press_key", g_altAutoF_key_vk);
                 cfg.SetInt("auto_g_press_key", g_autoG_key_vk);
                 cfg.SetInt("auto_ctrlg_ctrl_key", g_autoCtrlg_ctrl_vk);
                 cfg.SetInt("auto_ctrlg_g_key", g_autoCtrlg_g_vk);
@@ -132,24 +117,6 @@ namespace LavenderHook {
 
             int GetAutoGHoldMs() { LoadOnce(); return g_autoG_hold_ms; }
             int GetAutoGDelayMs() { LoadOnce(); return g_autoG_delay_ms; }
-
-            // Auto F
-            void SetAutoFTiming(int intervalMs)
-            {
-                LoadOnce();
-                g_autoF_interval_ms = intervalMs;
-                Save();
-            }
-
-            int GetAutoFIntervalMs() { LoadOnce(); return g_autoF_interval_ms; }
-
-            void SetAutoFKey(int vk) { LoadOnce(); g_autoF_key_vk = vk; Save(); }
-            int GetAutoFKey() { LoadOnce(); return g_autoF_key_vk; }
-
-            void SetAltAutoFTiming(int intervalMs) { LoadOnce(); g_altAutoF_interval_ms = intervalMs; Save(); }
-            int GetAltAutoFIntervalMs() { LoadOnce(); return g_altAutoF_interval_ms; }
-            void SetAltAutoFKey(int vk) { LoadOnce(); g_altAutoF_key_vk = vk; Save(); }
-            int GetAltAutoFKey() { LoadOnce(); return g_altAutoF_key_vk; }
 
             void SetAutoGKey(int vk) { LoadOnce(); g_autoG_key_vk = vk; Save(); }
             int GetAutoGKey() { LoadOnce(); return g_autoG_key_vk; }
@@ -254,26 +221,6 @@ namespace LavenderHook {
                 }
             }
 
-            static void TickAutoF(bool enabled)
-            {
-                LoadOnce();
-
-                static steady_clock::time_point last;
-                TickEvery(enabled, last, milliseconds(g_autoF_interval_ms), []() {
-                    PressVK(g_autoF_key_vk);
-                    });
-            }
-
-            static void TickAltAutoF(bool enabled)
-            {
-                LoadOnce();
-
-                static steady_clock::time_point last;
-                TickEvery(enabled, last, milliseconds(g_altAutoF_interval_ms), []() {
-                    PressVKNoInit(g_altAutoF_key_vk);
-                    });
-            }
-
             static void TickAutoCtrlG(bool enabled)
             {
                 LoadOnce();
@@ -349,7 +296,6 @@ namespace LavenderHook {
             }
 
             void TickButton1(bool enabled) { TickAutoG(enabled); }
-            void TickButton2(bool enabled) { TickAutoF(enabled); }
             void TickButton3(bool enabled) { TickAutoCtrlG(enabled); }
             void TickButton4(bool enabled) { TickSkipCutscene(enabled); }
 
@@ -359,24 +305,22 @@ namespace LavenderHook {
 
                 static std::chrono::steady_clock::time_point last;
                 TickEvery(enabled, last, std::chrono::milliseconds(g_autoClick_interval_ms), []() {
-                    if (!LavenderHook::Input::AutomationAllowed()) return;
-
                     HWND hwnd = LavenderHook::Globals::window_handle;
                     if (!hwnd) return;
 
-                    RECT rc;
-                    if (!GetClientRect(hwnd, &rc)) return;
-                    int x = (rc.right - rc.left) / 2;
-                    int y = (rc.bottom - rc.top) / 2;
-                    LPARAM lParam = MAKELPARAM(x, y);
+                    POINT pt;
+                    if (!GetCursorPos(&pt)) return;
+                    if (!ScreenToClient(hwnd, &pt)) return;
+                    LPARAM lParam = MAKELPARAM(pt.x, pt.y);
+                    WNDPROC orig = LavenderHook::Hooks::WndProc::original_wndproc;
+                    if (!orig) return;
 
-                    PostMessage(hwnd, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
-                    PostMessage(hwnd, WM_LBUTTONUP, 0, lParam);
+                    CallWindowProcW(orig, hwnd, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
+                    CallWindowProcW(orig, hwnd, WM_LBUTTONUP,   0,          lParam);
                 });
             }
 
             void TickButton5(bool enabled) { TickAutoClick(enabled); }
-            void TickButton6(bool enabled) { TickAltAutoF(enabled); }
 
         }
     }
