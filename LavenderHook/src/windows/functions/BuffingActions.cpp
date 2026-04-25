@@ -177,13 +177,14 @@ namespace LavenderHook {
                 enum class State { IDLE, JUST_ENABLED, ACTIVE, COOLING };
                 static State state = State::IDLE;
                 static steady_clock::time_point cooldownStart{};
+                static steady_clock::time_point stateStart{};
 
                 if (!enabled) {
-                    // If the boost is currently active, press to deactivate it.
                     if (state == State::ACTIVE && AutomationAllowed())
                         PressVK(g_petBoost_key_vk);
                     state = State::IDLE;
                     cooldownStart = {};
+                    stateStart = {};
                     return;
                 }
 
@@ -195,32 +196,42 @@ namespace LavenderHook {
                 switch (state)
                 {
                 case State::IDLE:
-                    // Transition on the very first tick after enable
                     state = State::JUST_ENABLED;
                     break;
 
                 case State::JUST_ENABLED:
-                    // Press C to activate the boost, then wait for mana to drain
                     PressVK(g_petBoost_key_vk);
                     state = State::ACTIVE;
+                    stateStart = now;
                     break;
 
                 case State::ACTIVE:
-                    // Deactivate once mana has drained low enough
                     if (mana < static_cast<float>(g_petBoost_min_mana)) {
                         PressVK(g_petBoost_key_vk);
                         state = State::COOLING;
                         cooldownStart = now;
+                        stateStart = now;
+                    } else if ((now - stateStart) >= seconds(40)) {
+                        // Guard: ability may not have activated — deactivate and cool down
+                        PressVK(g_petBoost_key_vk);
+                        state = State::COOLING;
+                        cooldownStart = now;
+                        stateStart = now;
                     }
                     break;
 
                 case State::COOLING:
-                    // Reactivate once cooldown elapsed AND mana has recovered to max threshold
                     if ((now - cooldownStart) >= milliseconds(g_petBoost_cooldown_ms) &&
                         mana >= static_cast<float>(g_petBoost_max_mana))
                     {
                         PressVK(g_petBoost_key_vk);
                         state = State::ACTIVE;
+                        stateStart = now;
+                    } else if ((now - stateStart) >= seconds(30)) {
+                        // Guard: mana not recovering — retry activation
+                        PressVK(g_petBoost_key_vk);
+                        state = State::ACTIVE;
+                        stateStart = now;
                     }
                     break;
                 }
@@ -238,12 +249,14 @@ namespace LavenderHook {
                 enum class State { IDLE, JUST_ENABLED, ACTIVE, COOLING };
                 static State state = State::IDLE;
                 static steady_clock::time_point cooldownStart{};
+                static steady_clock::time_point stateStart{};
 
                 if (!enabled) {
                     if (state == State::ACTIVE && AutomationAllowed())
                         PressVK(g_wrathForm_key_vk);
                     state = State::IDLE;
                     cooldownStart = {};
+                    stateStart = {};
                     return;
                 }
 
@@ -260,12 +273,20 @@ namespace LavenderHook {
                 case State::JUST_ENABLED:
                     PressVK(g_wrathForm_key_vk);
                     state = State::ACTIVE;
+                    stateStart = now;
                     break;
                 case State::ACTIVE:
                     if (mana < static_cast<float>(g_wrathForm_min_mana)) {
                         PressVK(g_wrathForm_key_vk);
                         state = State::COOLING;
                         cooldownStart = now;
+                        stateStart = now;
+                    } else if ((now - stateStart) >= seconds(40)) {
+                        // Guard: ability may not have activated — deactivate and cool down
+                        PressVK(g_wrathForm_key_vk);
+                        state = State::COOLING;
+                        cooldownStart = now;
+                        stateStart = now;
                     }
                     break;
                 case State::COOLING:
@@ -274,6 +295,12 @@ namespace LavenderHook {
                     {
                         PressVK(g_wrathForm_key_vk);
                         state = State::ACTIVE;
+                        stateStart = now;
+                    } else if ((now - stateStart) >= seconds(30)) {
+                        // Guard: mana not recovering — retry activation
+                        PressVK(g_wrathForm_key_vk);
+                        state = State::ACTIVE;
+                        stateStart = now;
                     }
                     break;
                 }
@@ -298,6 +325,7 @@ namespace LavenderHook {
                 static State state = State::IDLE;
                 static steady_clock::time_point cooldownStart{};
                 static steady_clock::time_point lastSpam{};
+                static steady_clock::time_point stateStart{};
 
                 if (!enabled) {
                     if (state == State::DRAINING && AutomationAllowed())
@@ -305,6 +333,7 @@ namespace LavenderHook {
                     state = State::IDLE;
                     cooldownStart = {};
                     lastSpam = {};
+                    stateStart = {};
                     return;
                 }
 
@@ -322,6 +351,7 @@ namespace LavenderHook {
                 case State::JUST_ENABLED:
                     PressVK(g_overcharge_key_vk);
                     state = State::DRAINING;
+                    stateStart = now;
                     break;
 
                 case State::DRAINING:
@@ -334,6 +364,13 @@ namespace LavenderHook {
                         PressVK(g_overcharge_key_vk);
                         state = State::COOLING;
                         cooldownStart = now;
+                        stateStart = now;
+                    } else if ((now - stateStart) >= seconds(40)) {
+                        // Guard: mana not draining — deactivate and cool down
+                        PressVK(g_overcharge_key_vk);
+                        state = State::COOLING;
+                        cooldownStart = now;
+                        stateStart = now;
                     }
                     break;
 
@@ -343,6 +380,12 @@ namespace LavenderHook {
                     {
                         PressVK(g_overcharge_key_vk);
                         state = State::DRAINING;
+                        stateStart = now;
+                    } else if ((now - stateStart) >= seconds(30)) {
+                        // Guard: mana not recovering — retry activation
+                        PressVK(g_overcharge_key_vk);
+                        state = State::DRAINING;
+                        stateStart = now;
                     }
                     break;
                 }
