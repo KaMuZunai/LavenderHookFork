@@ -13,12 +13,29 @@ namespace LavenderHook::Memory::EnemiesMaxFallbackHook {
     // MOV [RBX+0x488], ESI
     inline constexpr uint8_t k_Pattern[] = {
         0x89, 0xB3, 0x88, 0x04, 0x00, 0x00, // MOV [RBX+0x488], ESI
-        0xE8, 0xB1, 0xA2, 0x1A, 0xFF,       // CALL ...
+        0xE8, 0x71, 0x6E, 0x1A, 0xFF,       // CALL ... (wildcarded offset)
         0x48, 0x8B, 0xCB,                    // MOV RCX, RBX
         0xE8, 0x09, 0x61, 0xFE, 0xFF,       // CALL ...
         0x48, 0x8B, 0x87, 0xB8, 0x04, 0x00, 0x00, // MOV RAX, [RBX+0x4B8]
         0x89, 0xA8, 0x8C, 0x04, 0x00, 0x00, // MOV [RAX+0x48C], EBP
-        0x48, 0x8B, 0x9C, 0x24, 0x80, 0x00, 0x00, 0x00  // MOV RBX, [RSP+0x80]
+        0x48, 0x8B, 0x9C, 0x24, 0x80, 0x00, 0x00, 0x00, // MOV RBX, [RSP+0x80]
+        0x48, 0x83, 0xC4, 0x40,             // ADD RSP, 0x40
+        0x41, 0x5F,                         // POP R15
+        0x41, 0x5E                          // POP R14
+    };
+
+    // 1 = match, 0 = wildcard so it stops breaking on updates >:(
+    inline constexpr uint8_t k_Mask[] = {
+        1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0,
+        1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1,
+        1, 1,
+        1, 1
     };
 
     inline void*     g_stub   = nullptr;
@@ -92,7 +109,7 @@ namespace LavenderHook::Memory::EnemiesMaxFallbackHook {
         uint8_t* base = nullptr;
         size_t   size = 0;
         if (!Utils::GetModuleRange(L"DDS-Win64-Shipping.exe", base, size)) return false;
-        uint8_t* hit = Utils::ScanPattern(base, size, k_Pattern, sizeof(k_Pattern));
+        uint8_t* hit = Utils::ScanPattern(base, size, k_Pattern, k_Mask, sizeof(k_Pattern));
         if (!hit) return false;
         return InstallHook(hit);
     }

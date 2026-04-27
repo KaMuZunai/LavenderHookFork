@@ -31,6 +31,26 @@ namespace LavenderHook::Memory::Utils {
         return nullptr;
     }
 
+    inline uint8_t* ScanPattern(uint8_t* base, size_t len,
+                                  const uint8_t* pat, const uint8_t* mask, size_t patLen)
+    {
+        if (len < patLen) return nullptr;
+        for (size_t i = 0, e = len - patLen; i <= e; ++i)
+        {
+            bool found = true;
+            for (size_t j = 0; j < patLen; ++j)
+            {
+                if (mask[j] && base[i + j] != pat[j])
+                {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) return base + i;
+        }
+        return nullptr;
+    }
+
     // Allocate PAGE_EXECUTE_READWRITE memory within ±1 GB of the target address.
     inline void* AllocNear(uintptr_t target, size_t size)
     {
