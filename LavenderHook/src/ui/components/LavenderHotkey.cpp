@@ -349,7 +349,15 @@ namespace LavenderHook::UI::Lavender {
 
         if (second != 0) {
             // Combo binding
+            const bool down1 = IsVkDown(first);
             const bool down2 = IsVkDown(second);
+            const bool pressed2 = IsVkPressed(second);
+            const bool prev1 = keyEdge[first];
+            const bool prev2 = keyEdge[second];
+
+            keyEdge[first] = down1;
+            keyEdge[second] = down2;
+
             auto sit2 = s_suppressToggleUntilUp.find(second);
             if (sit2 != s_suppressToggleUntilUp.end() && sit2->second) {
                 if (!down2) {
@@ -360,13 +368,20 @@ namespace LavenderHook::UI::Lavender {
                 return;
             }
 
-            const bool prev2 = keyEdge[second];
-            keyEdge[second] = down2;
+            bool comboTriggered = false;
+            if ((pressed2 || (!down2 && prev2)) && (down1 || prev1)) {
+                comboTriggered = true;
+            }
+            else if ((!down1 && prev1) && down2 && prev2) {
+                comboTriggered = true;
+            }
 
-            const bool modDown = IsVkDown(first);
-            if (down2 && !prev2 && modDown) {
+            if (comboTriggered) {
                 toggleState = !toggleState;
                 LavenderHook::Audio::PlayToggleSound(toggleState);
+
+                s_suppressToggleUntilUp[first] = true;
+                s_suppressToggleUntilUp[second] = true;
             }
             return;
         }
@@ -383,12 +398,28 @@ namespace LavenderHook::UI::Lavender {
             }
             return;
         }
+
+        if (!IsModifierVk(vk) && down && keyEdge[vk]) {
+            // When the key is held, detect if another key becomes held as well.
+            if (IsAnyModifierDown(vk) || IsAnyNonModifierKeyDown(vk))
+                saw_other_key_while_held = true;
+        }
+
+        // Prevent plain hotkeys from firing when a modifier or another non-modifier
+        // key is held down, so combos like Ctrl+F9 or G+K can override F9/G/K.
+        if (!IsModifierVk(vk) && (IsAnyModifierDown(vk) || IsAnyNonModifierKeyDown(vk)))
+            return;
+
         const bool prev = keyEdge[vk];
         keyEdge[vk] = down;
 
-        if (down && !prev) {
+        if (!down && prev && !saw_other_key_while_held) {
             toggleState = !toggleState;
             LavenderHook::Audio::PlayToggleSound(toggleState);
+        }
+
+        if (!down) {
+            saw_other_key_while_held = false;
         }
     }
 

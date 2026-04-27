@@ -17,6 +17,7 @@ namespace LavenderHook::UI::Lavender {
 
         int pending_first_vk = 0;
         bool waiting_for_combo = false;
+        bool saw_other_key_while_held = false;
 
         std::unordered_map<int, bool> keyEdge;
 

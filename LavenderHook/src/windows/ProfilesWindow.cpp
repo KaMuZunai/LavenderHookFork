@@ -1,6 +1,8 @@
 #include "ProfilesWindow.h"
+#include "MacroWindowsShared.h"
 #include "../misc/Globals.h"
 #include "../imgui/imgui.h"
+#include "../ui/ActionsOverlay.h"
 #include "../ui/components/LavenderFadeOut.h"
 #include "../ui/components/LavenderWindowHeader.h"
 #include "../assets/UITextures.h"
@@ -26,6 +28,7 @@ namespace {
 struct Profile {
     std::string              name;
     std::vector<std::string> functions;
+    std::vector<std::string> macros;
     int                      hotkeyVK     = 0;
     LavenderHook::UI::Lavender::Hotkey hotkey = {};
     float tooltipFade    = 0.f;
@@ -85,6 +88,9 @@ static void SaveProfiles()
         f << "fn_count=" << p.functions.size() << "\n";
         for (size_t j = 0; j < p.functions.size(); ++j)
             f << "fn_" << j << "=" << p.functions[j] << "\n";
+        f << "macro_count=" << p.macros.size() << "\n";
+        for (size_t j = 0; j < p.macros.size(); ++j)
+            f << "macro_" << j << "=" << p.macros[j] << "\n";
         f << "\n";
     }
 }
@@ -142,30 +148,68 @@ static void LoadProfiles()
             if (!fn.empty())
                 p.functions.push_back(fn);
         }
+        const int macroCount = getInt(sec, "macro_count", 0);
+        for (int j = 0; j < macroCount; ++j) {
+            std::string macro = getString(sec, "macro_" + std::to_string(j), "");
+            if (!macro.empty())
+                p.macros.push_back(macro);
+        }
         g_profiles.push_back(std::move(p));
     }
 }
 
 // Helpers
+static LavenderHook::UI::Windows::MacroDefinition* FindMacroByName(const std::string& name)
+{
+    for (const auto& macro : g_macros)
+        if (macro->name == name)
+            return macro.get();
+    return nullptr;
+}
+
 static bool IsProfileActive(const Profile& p)
 {
-    if (p.functions.empty()) return false;
+    bool hasItem = false;
+    bool active = true;
     auto& reg = LavenderHook::UI::FunctionRegistry::Instance();
+
     for (const auto& fn : p.functions) {
+        hasItem = true;
         const bool* ptr = reg.Find(fn);
-        if (!ptr || !*ptr) return false;
+        if (!ptr || !*ptr) active = false;
     }
-    return true;
+
+    for (const auto& macroName : p.macros) {
+        hasItem = true;
+        auto* macro = FindMacroByName(macroName);
+        if (!macro || !macro->enabled) active = false;
+    }
+
+    return hasItem && active;
 }
 
 static void ToggleProfile(Profile& p)
 {
     auto& reg    = LavenderHook::UI::FunctionRegistry::Instance();
     bool  enable = !IsProfileActive(p);
+
     for (const auto& fn : p.functions) {
         bool* ptr = reg.Find(fn);
         if (ptr) *ptr = enable;
     }
+
+    bool macroChanged = false;
+    for (const auto& macroName : p.macros) {
+        auto* macro = FindMacroByName(macroName);
+        if (macro && macro->enabled != enable) {
+            macro->enabled = enable;
+            LavenderHook::UI::Actions::SetActive(macro->name, macro->enabled);
+            macroChanged = true;
+        }
+    }
+
+    if (macroChanged)
+        MarkMacrosDirty();
 }
 
 static std::vector<std::string> GetActiveFunctions()
@@ -175,6 +219,15 @@ static std::vector<std::string> GetActiveFunctions()
     for (const auto& e : reg.GetAll())
         if (e.pEnabled && *e.pEnabled)
             out.push_back(e.name);
+    return out;
+}
+
+static std::vector<std::string> GetActiveMacros()
+{
+    std::vector<std::string> out;
+    for (const auto& macro : g_macros)
+        if (macro->enabled)
+            out.push_back(macro->name);
     return out;
 }
 
@@ -386,15 +439,28 @@ void ProfilesWindow::Render(bool wantVisible)
 
                     if (p.tooltipFade > 0.001f)
                     {
-                        std::string tip = "Functions in \"" + p.name + "\":\n";
-                        if (p.functions.empty())
+                        std::string tip = "Profile \"" + p.name + "\" includes:\n";
+                        if (p.functions.empty() && p.macros.empty())
                             tip += "  (none saved)";
                         else
-                            for (size_t fi = 0; fi < p.functions.size(); ++fi)
+                        {
+                            if (!p.functions.empty())
                             {
-                                if (fi > 0) tip += "\n";
-                                tip += "  " + p.functions[fi];
+                                tip += "Functions:\n";
+                                for (size_t fi = 0; fi < p.functions.size(); ++fi)
+                                {
+                                    tip += "  " + p.functions[fi] + "\n";
+                                }
                             }
+                            if (!p.macros.empty())
+                            {
+                                tip += "Macros:\n";
+                                for (size_t mi = 0; mi < p.macros.size(); ++mi)
+                                {
+                                    tip += "  " + p.macros[mi] + "\n";
+                                }
+                            }
+                        }
                         DrawTooltip(tip.c_str(), p.tooltipFade);
                     }
                 }
@@ -544,6 +610,7 @@ void ProfilesWindow::Render(bool wantVisible)
                     ? std::string(s_addNameBuffer)
                     : "Profile " + std::to_string(g_profiles.size() + 1);
                 p.functions = GetActiveFunctions();
+                p.macros = GetActiveMacros();
                 g_profiles.push_back(std::move(p));
                 SaveProfiles();
                 s_addingNew        = false;

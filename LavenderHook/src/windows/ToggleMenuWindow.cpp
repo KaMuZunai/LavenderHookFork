@@ -270,6 +270,7 @@ static void SaveMenuSettings()
     f << "show_misc_window=" << BoolToStr(LavenderHook::Globals::show_misc_window) << "\n";
     f << "show_buffing_window=" << BoolToStr(LavenderHook::Globals::show_buffing_window) << "\n";
     f << "show_profiles_window=" << BoolToStr(LavenderHook::Globals::show_profiles_window) << "\n";
+    f << "show_macro_window=" << BoolToStr(LavenderHook::Globals::show_macro_window) << "\n";
     f << "show_gamepad_window=" << BoolToStr(LavenderHook::Globals::show_gamepad_window) << "\n";
     f << "show_paragon_level_window=" << BoolToStr(LavenderHook::Globals::show_paragon_level_window) << "\n";
     f << "show_console=" << BoolToStr(LavenderHook::Globals::show_console) << "\n";
@@ -314,6 +315,7 @@ void LoadMenuSettings()
         if (line.rfind("show_misc_window", 0) == 0)          ReadBool(line, LavenderHook::Globals::show_misc_window);
         if (line.rfind("show_buffing_window", 0) == 0)       ReadBool(line, LavenderHook::Globals::show_buffing_window);
         if (line.rfind("show_profiles_window", 0) == 0)          ReadBool(line, LavenderHook::Globals::show_profiles_window);
+        if (line.rfind("show_macro_window", 0) == 0)             ReadBool(line, LavenderHook::Globals::show_macro_window);
         if (line.rfind("show_gamepad_window", 0) == 0)       ReadBool(line, LavenderHook::Globals::show_gamepad_window);
         if (line.rfind("show_paragon_level_window", 0) == 0) ReadBool(line, LavenderHook::Globals::show_paragon_level_window);
         if (line.rfind("show_console", 0) == 0)              ReadBool(line, LavenderHook::Globals::show_console);
@@ -583,6 +585,12 @@ namespace LavenderHook {
                         bW = LavenderHook::Globals::show_profiles_window;
                         if (ImGui::Checkbox("Profiles Window", &bW)) {
                             LavenderHook::Globals::show_profiles_window = bW;
+                            SaveMenuSettings();
+                            LavenderHook::Audio::PlayToggleSound(bW);
+                        }
+                        bW = LavenderHook::Globals::show_macro_window;
+                        if (ImGui::Checkbox("Macro Manager", &bW)) {
+                            LavenderHook::Globals::show_macro_window = bW;
                             SaveMenuSettings();
                             LavenderHook::Audio::PlayToggleSound(bW);
                         }

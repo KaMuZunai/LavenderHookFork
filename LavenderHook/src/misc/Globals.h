@@ -26,6 +26,7 @@ namespace LavenderHook::Globals
     inline bool show_buffing_window = true;
     inline bool show_gamepad_window = false;
     inline bool show_paragon_level_window = false;
+    inline bool show_macro_window = false;
     inline bool show_performance_overlay = true;
     inline bool show_wave_window = false;
     inline bool show_menu_selector_window = false;

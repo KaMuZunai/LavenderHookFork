@@ -153,7 +153,7 @@ namespace LavenderHook::UI::Windows {
 
         // Build UI
         g_bWindow
-            .SetHeaderIcon(g_menuIcoTex)
+            .SetHeaderIcon(g_swordIcoTex)
             .AddToggleDropdown("Flash Buff", &autoF.enabled, &g_autoFHotkey)
             .AddItemDescription(R"(Presses the Flash Heal Button by pressing the configured button.
 additional configurations:

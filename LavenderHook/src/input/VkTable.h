@@ -123,6 +123,12 @@ namespace LavenderHook::UI::Lavender {
         return (GetAsyncKeyState(vk) & 0x8000) != 0;
     }
 
+    inline bool IsVkPressed(int vk)
+    {
+        if (IsGamepadVk(vk)) return false;
+        return (GetAsyncKeyState(vk) & 0x0001) != 0;
+    }
+
     inline bool IsBindableVk(int vk)
     {
         // L+R Mouse, Insert and CTRL + F1 not allowed as Hotkeys
@@ -136,6 +142,42 @@ namespace LavenderHook::UI::Lavender {
                 return false;
         }
         return true;
+    }
+
+    inline bool IsModifierVk(int vk)
+    {
+        return vk == VK_CONTROL || vk == VK_LCONTROL || vk == VK_RCONTROL ||
+               vk == VK_SHIFT   || vk == VK_LSHIFT   || vk == VK_RSHIFT ||
+               vk == VK_MENU    || vk == VK_LMENU    || vk == VK_RMENU ||
+               vk == VK_LWIN    || vk == VK_RWIN;
+    }
+
+    inline bool IsAnyModifierDown(int excludeVk = 0)
+    {
+        auto isDown = [&](int vk) {
+            return vk != excludeVk && IsVkDown(vk);
+        };
+
+        return isDown(VK_CONTROL) || isDown(VK_LCONTROL) || isDown(VK_RCONTROL) ||
+               isDown(VK_SHIFT)   || isDown(VK_LSHIFT)   || isDown(VK_RSHIFT)   ||
+               isDown(VK_MENU)    || isDown(VK_LMENU)    || isDown(VK_RMENU)    ||
+               isDown(VK_LWIN)    || isDown(VK_RWIN);
+    }
+
+    inline bool IsAnyNonModifierKeyDown(int excludeVk = 0)
+    {
+        for (int code = 1; code < 256; ++code)
+        {
+            if (code == excludeVk) continue;
+            if (IsModifierVk(code)) continue;
+            if (IsVkDown(code)) return true;
+        }
+        for (int code = GPVK_BASE; code < GPVK_END; ++code)
+        {
+            if (code == excludeVk) continue;
+            if (IsVkDown(code)) return true;
+        }
+        return false;
     }
 
     inline const char* VkToString(int vk)

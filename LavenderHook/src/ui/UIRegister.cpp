@@ -14,6 +14,8 @@
 #include "../windows/MenuLogoWindow.h"
 #include "../windows/ParagonLevelWindow.h"
 #include "../windows/WaveTrackerWindow.h"
+#include "../windows/MacroManagerWindow.h"
+#include "../windows/MacroEditorWindow.h"
 
 
 void RegisterUIWindows()
@@ -70,6 +72,32 @@ void RegisterUIWindows()
         );
     },
     nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        [] {
+            LavenderHook::UI::Windows::MacroManagerWindow::UpdateActions();
+        },
+        [] {
+            LavenderHook::UI::Windows::MacroManagerWindow::Render(
+                LavenderHook::Globals::show_menu &&
+                LavenderHook::Globals::show_macro_window
+            );
+        },
+        nullptr
+        });
+
+    ui.Register(UIWindowEntry{
+        [] {
+            LavenderHook::UI::Windows::MacroEditorWindow::UpdateActions();
+        },
+        [] {
+            LavenderHook::UI::Windows::MacroEditorWindow::Render(
+                LavenderHook::Globals::show_menu &&
+                LavenderHook::Globals::show_macro_window
+            );
+        },
+        nullptr
         });
 
     ui.Register(UIWindowEntry{
